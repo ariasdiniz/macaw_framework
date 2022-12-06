@@ -1,0 +1,21 @@
+module MacawFramework
+  class Macaw
+    @port: int
+
+    def delete: -> nil
+
+    def get: -> nil
+
+    def patch: -> nil
+
+    def post: -> nil
+
+    def put: -> nil
+
+    def start!: -> nil
+
+    private
+
+    def extract_client_info: -> nil
+  end
+end
