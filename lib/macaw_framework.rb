@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'macaw_framework/endpoint_not_mapped_error'
-require_relative 'macaw_framework/http_status_code'
-require_relative 'macaw_framework/version'
-require 'socket'
-require 'json'
+require_relative "macaw_framework/endpoint_not_mapped_error"
+require_relative "macaw_framework/http_status_code"
+require_relative "macaw_framework/version"
+require "socket"
+require "json"
 
 module MacawFramework
   ##
@@ -14,8 +14,8 @@ module MacawFramework
     include(HttpStatusCode)
     def initialize
       begin
-        config = JSON.parse(File.read('application.json'))
-        @port = config['macaw']['port']
+        config = JSON.parse(File.read("application.json"))
+        @port = config["macaw"]["port"]
       rescue StandardError
         @port ||= 8080
       end
@@ -29,7 +29,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {Integer, String}
     def get(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
       define_singleton_method("get_#{path_clean}", block)
     end
 
@@ -40,7 +40,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def post(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
       define_singleton_method("post_#{path_clean}", block)
     end
 
@@ -51,7 +51,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def put(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
       define_singleton_method("put_#{path_clean}", block)
     end
 
@@ -62,7 +62,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def patch(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
       define_singleton_method("patch_#{path_clean}", block)
     end
 
@@ -73,7 +73,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def delete(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
       define_singleton_method("delete_#{path_clean}", block)
     end
 
@@ -84,12 +84,13 @@ module MacawFramework
       puts "Starting server at port #{@port}"
       loop do
         Thread.start(server.accept) do |client|
-          method_name = extract_client_info(client)
+          client.select
+          method_name, headers, body = extract_client_info(client)
           raise EndpointNotMappedError unless respond_to?(method_name)
 
-          message, status = send(method_name)
+          message, status = send(method_name, headers, body)
           status ||= 200
-          message ||= 'Ok'
+          message ||= "Ok"
           client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"
           client.close
         rescue EndpointNotMappedError
@@ -100,18 +101,39 @@ module MacawFramework
           client.close
         end
       end
+    rescue Interrupt
+      puts "Macaw stop flying for some seeds..."
     end
 
     private
 
     ##
-    # Method for extracting headers and body from client request
-    # STILL IN DEVELOPMENT
-    # @todo finish implementation
+    # Method responsible for extracting information
+    # provided by the client like Headers and Body
     def extract_client_info(client)
-      method_name = client.gets.gsub('HTTP/1.1', '').gsub('/', '_').strip!.downcase
-      method_name.gsub!(' ', '')
-      method_name
+      method_name = client.gets.gsub("HTTP/1.1", "").gsub("/", "_").strip!.downcase
+      method_name.gsub!(" ", "")
+      body_first_line, headers = extract_headers(client)
+      body = extract_body(client, body_first_line, headers["Content-Length"].to_i)
+      [method_name, headers, body]
+    end
+
+    ##
+    # Extract application headers
+    def extract_headers(client)
+      header = client.gets.delete("\n").delete("\r")
+      headers = {}
+      while header.match(%r{[a-zA-Z0-9\-/*]*: [a-zA-Z0-9\-/*]})
+        split_header = header.split(":")
+        headers[split_header[0]] = split_header[1][1..]
+        header = client.gets.delete("\n").delete("\r")
+      end
+      [header, headers]
+    end
+
+    def extract_body(client, body_first_line, content_length)
+      body = client.read(content_length)
+      body_first_line << body.to_s
     end
   end
 end

@@ -16,6 +16,10 @@ module MacawFramework
 
     private
 
+    def extract_body: -> string
+
     def extract_client_info: -> nil
+
+    def extract_headers: -> string
   end
 end

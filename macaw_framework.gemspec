@@ -12,8 +12,9 @@ Gem::Specification.new do |spec|
   spec.description = "A project started for study purpose that I intend to keep working on."
   spec.homepage = "https://github.com/ariasdiniz/macaw_framework"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 2.6.0"
+  spec.required_ruby_version = ">= 2.7.0"
 
+  spec.metadata["documentation_uri"] = "https://rubydoc.info/gems/macaw_framework"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/ariasdiniz/macaw_framework"
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."

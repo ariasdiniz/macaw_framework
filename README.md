@@ -37,7 +37,7 @@ require 'json'
 
 m = MacawFramework::Macaw.new
 
-m.get('/hello_world') do
+m.get('/hello_world') do |headers, body|
   return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
 end
 
