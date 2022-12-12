@@ -4,6 +4,7 @@ require_relative "macaw_framework/endpoint_not_mapped_error"
 require_relative "macaw_framework/request_data_filtering"
 require_relative "macaw_framework/http_status_code"
 require_relative "macaw_framework/version"
+require "logger"
 require "socket"
 require "json"
 
@@ -17,8 +18,8 @@ module MacawFramework
     # @param {Logger} custom_log
     def initialize(custom_log = nil)
       begin
-        config = JSON.parse(File.read('application.json'))
-        @port = config['macaw']['port']
+        config = JSON.parse(File.read("application.json"))
+        @port = config["macaw"]["port"]
       rescue StandardError
         @port ||= 8080
       end
@@ -34,8 +35,7 @@ module MacawFramework
     # @return {Integer, String}
     def get(path, &block)
       path_clean = RequestDataFiltering.extract_path(path)
-      @macaw_log.info("Defining GET endpoint at #{path_clean}")
-      map_new_endpoint('get', path_clean, &block)
+      map_new_endpoint("get", path_clean, &block)
     end
 
     ##
@@ -45,9 +45,8 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def post(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
-      @macaw_log.info("Defining POST endpoint at #{path_clean}")
-      map_new_endpoint('post', path_clean, &block)
+      path_clean = RequestDataFiltering.extract_path(path)
+      map_new_endpoint("post", path_clean, &block)
     end
 
     ##
@@ -57,9 +56,8 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def put(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
-      @macaw_log.info("Defining PUT endpoint at #{path_clean}")
-      map_new_endpoint('put', path_clean, &block)
+      path_clean = RequestDataFiltering.extract_path(path)
+      map_new_endpoint("put", path_clean, &block)
     end
 
     ##
@@ -69,9 +67,8 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def patch(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
-      @macaw_log.info("Defining PATCH endpoint at #{path_clean}")
-      map_new_endpoint('patch', path_clean, &block)
+      path_clean = RequestDataFiltering.extract_path(path)
+      map_new_endpoint("patch", path_clean, &block)
     end
 
     ##
@@ -81,9 +78,8 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def delete(path, &block)
-      path_clean = path[0] == '/' ? path[1..].gsub('/', '_') : path.gsub('/', '_')
-      @macaw_log.info("Defining DELETE endpoint at #{path_clean}")
-      map_new_endpoint('delete', path_clean, &block)
+      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
+      map_new_endpoint("delete", path_clean, &block)
     end
 
     ##
@@ -98,10 +94,10 @@ module MacawFramework
           path, method_name, headers, body, parameters = RequestDataFiltering.extract_client_info(client)
           raise EndpointNotMappedError unless respond_to?(method_name)
 
-          @macaw_log.info("Running #{path.gsub("\n", '').gsub("\r", '')}")
+          @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
           message, status = send(method_name, headers, body, parameters)
           status ||= 200
-          message ||= 'Ok'
+          message ||= "Ok"
           client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"
           client.close
         rescue EndpointNotMappedError
@@ -114,14 +110,15 @@ module MacawFramework
         end
       end
     rescue Interrupt
-      @macaw_log.info('Stopping server')
+      @macaw_log.info("Stopping server")
       server.close
-      @macaw_log.info('Macaw stop flying for some seeds...')
+      @macaw_log.info("Macaw stop flying for some seeds...")
     end
 
     private
 
     def map_new_endpoint(prefix, path, &block)
+      @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
       define_singleton_method("#{prefix}_#{path}", block)
     end
   end
