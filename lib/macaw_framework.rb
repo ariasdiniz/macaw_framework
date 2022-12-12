@@ -4,6 +4,7 @@ require_relative "macaw_framework/endpoint_not_mapped_error"
 require_relative "macaw_framework/request_data_filtering"
 require_relative "macaw_framework/http_status_code"
 require_relative "macaw_framework/version"
+require "logger"
 require "socket"
 require "json"
 

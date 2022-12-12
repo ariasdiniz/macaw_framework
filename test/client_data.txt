@@ -1,0 +1,9 @@
+GET /test_parameters?param1=11111&param2=22222 HTTP/1.1
+Content-Type: application/json
+Accept: */*
+Host: localhost:8080
+Content-Length: 29
+
+{
+    "testBody": "testing"
+}
