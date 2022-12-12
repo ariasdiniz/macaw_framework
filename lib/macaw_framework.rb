@@ -84,6 +84,16 @@ module MacawFramework
       time = Time.now
       server = TCPServer.open(@port)
       @macaw_log.info("Server started in #{Time.now - time} seconds.")
+      server_loop(server)
+    rescue Interrupt
+      @macaw_log.info("Stopping server")
+      server.close
+      @macaw_log.info("Macaw stop flying for some seeds...")
+    end
+
+    private
+
+    def server_loop(server)
       loop do
         Thread.start(server.accept) do |client|
           path, method_name, headers, body, parameters = RequestDataFiltering.extract_client_info(client)
@@ -104,13 +114,7 @@ module MacawFramework
           client.close
         end
       end
-    rescue Interrupt
-      @macaw_log.info("Stopping server")
-      server.close
-      @macaw_log.info("Macaw stop flying for some seeds...")
     end
-
-    private
 
     def map_new_endpoint(prefix, path, &block)
       path_clean = RequestDataFiltering.extract_path(path)
