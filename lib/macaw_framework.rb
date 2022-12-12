@@ -34,8 +34,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {Integer, String}
     def get(path, &block)
-      path_clean = RequestDataFiltering.extract_path(path)
-      map_new_endpoint("get", path_clean, &block)
+      map_new_endpoint("get", path, &block)
     end
 
     ##
@@ -45,8 +44,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def post(path, &block)
-      path_clean = RequestDataFiltering.extract_path(path)
-      map_new_endpoint("post", path_clean, &block)
+      map_new_endpoint("post", path, &block)
     end
 
     ##
@@ -56,8 +54,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def put(path, &block)
-      path_clean = RequestDataFiltering.extract_path(path)
-      map_new_endpoint("put", path_clean, &block)
+      map_new_endpoint("put", path, &block)
     end
 
     ##
@@ -67,8 +64,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def patch(path, &block)
-      path_clean = RequestDataFiltering.extract_path(path)
-      map_new_endpoint("patch", path_clean, &block)
+      map_new_endpoint("patch", path, &block)
     end
 
     ##
@@ -78,8 +74,7 @@ module MacawFramework
     # @param {Proc} block
     # @return {String, Integer}
     def delete(path, &block)
-      path_clean = path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
-      map_new_endpoint("delete", path_clean, &block)
+      map_new_endpoint("delete", path, &block)
     end
 
     ##
@@ -118,8 +113,9 @@ module MacawFramework
     private
 
     def map_new_endpoint(prefix, path, &block)
+      path_clean = RequestDataFiltering.extract_path(path)
       @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
-      define_singleton_method("#{prefix}_#{path}", block)
+      define_singleton_method("#{prefix}_#{path_clean}", block)
     end
   end
 end
