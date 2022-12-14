@@ -14,3 +14,7 @@
 - Adding logs to the framework activity
 - Removing undefined Status Codes from http_status_code hash
 - Moving methods from Macaw class to RequestDataFiltering module, respecting SOLID
+
+## [0.1.3] - 2022-12-13
+
+- Adding logger gem to Macaw class to fix a bug on the application start
