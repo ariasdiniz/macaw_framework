@@ -20,10 +20,12 @@ module MacawFramework
       begin
         config = JSON.parse(File.read("application.json"))
         @port = config["macaw"]["port"]
+        @bind = config["macaw"]["bind"]
       rescue StandardError
-        @port ||= 8080
+        # Ignored
       end
       @port ||= 8080
+      @bind ||= "0.0.0.0"
       @macaw_log ||= custom_log.nil? ? Logger.new($stdout) : custom_log
     end
 
@@ -82,7 +84,7 @@ module MacawFramework
     def start!
       @macaw_log.info("Starting server at port #{@port}")
       time = Time.now
-      server = TCPServer.open(@port)
+      server = TCPServer.new(@bind, @port)
       @macaw_log.info("Server started in #{Time.now - time} seconds.")
       server_loop(server)
     rescue Interrupt
