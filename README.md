@@ -25,7 +25,8 @@ in the same directory of the script that will start the application with the fol
 ```json
 {
   "macaw": {
-    "port": 80
+    "port": 80,
+    "bind": "0.0.0.0"
   }
 }
 ```

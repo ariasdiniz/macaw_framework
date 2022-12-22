@@ -1,5 +1,7 @@
 module MacawFramework
   class Macaw
+    @bind: string
+    @macaw_log: Logger
     @port: int
 
     def delete: -> nil
