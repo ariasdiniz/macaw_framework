@@ -25,7 +25,7 @@ module MacawFramework
         # Ignored
       end
       @port ||= 8080
-      @bind ||= "0.0.0.0"
+      @bind ||= "localhost"
       @macaw_log ||= custom_log.nil? ? Logger.new($stdout) : custom_log
     end
 
