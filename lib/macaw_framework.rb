@@ -21,12 +21,14 @@ module MacawFramework
         config = JSON.parse(File.read("application.json"))
         @port = config["macaw"]["port"]
         @bind = config["macaw"]["bind"]
+        @threads = config["macaw"]["threads"].to_i
       rescue StandardError => e
         @macaw_log.error(e.message)
       end
       @port ||= 8080
       @bind ||= "localhost"
-      @server = server.new(self, @macaw_log, @port, @bind)
+      @threads ||= 5
+      @server = server.new(self, @macaw_log, @port, @bind, @threads)
     end
 
     ##
@@ -82,9 +84,10 @@ module MacawFramework
     ##
     # Starts the web server
     def start!
+      @macaw_log.info("---------------------------------")
       @macaw_log.info("Starting server at port #{@port}")
-      time = Time.now
-      @macaw_log.info("Server started in #{Time.now - time} seconds.")
+      @macaw_log.info("Number of threads: #{@threads}")
+      @macaw_log.info("---------------------------------")
       server_loop(@server)
     rescue Interrupt
       @macaw_log.info("Stopping server")

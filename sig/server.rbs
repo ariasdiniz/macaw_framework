@@ -6,6 +6,8 @@ class Server
 
   @server: TCPServer
 
+  @threads: Integer
+
   def close: -> nil
 
   def run: -> nil
@@ -13,4 +15,6 @@ class Server
   private
 
   def call_endpoint: -> Array[untyped]
+
+  def handle_client: -> nil
 end

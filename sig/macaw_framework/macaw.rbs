@@ -6,6 +6,8 @@ module MacawFramework
 
     @server: Server
 
+    @threads: Integer
+
     def delete: -> nil
 
     def get: -> nil
