@@ -6,7 +6,7 @@ module RequestDataFiltering
   ##
   # Method responsible for extracting information
   # provided by the client like Headers and Body
-  def self.extract_client_info(client)
+  def self.parse_request_data(client)
     path, parameters = extract_url_parameters(client.gets.gsub("HTTP/1.1", ""))
     method_name = sanitize_method_name(path)
     body_first_line, headers = extract_headers(client)

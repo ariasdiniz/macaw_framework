@@ -1,0 +1,3 @@
+module LoggingAspect
+  def call_endpoint: -> Array[untyped]
+end

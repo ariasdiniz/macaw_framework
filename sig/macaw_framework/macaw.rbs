@@ -4,6 +4,8 @@ module MacawFramework
     @macaw_log: Logger
     @port: int
 
+    @server: Server
+
     def delete: -> nil
 
     def get: -> nil
