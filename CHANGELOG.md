@@ -18,3 +18,9 @@
 ## [0.1.3] - 2022-12-13
 
 - Adding logger gem to Macaw class to fix a bug on the application start
+
+## [0.1.4] - 2023-04-09
+
+- Adding log by aspect on endpoint calls to improve observability
+- Moving the server for a new separate class to respect single responsibility
+- Improved the data filtering middleware to sanitize inputs

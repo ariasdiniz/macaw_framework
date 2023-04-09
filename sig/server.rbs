@@ -1,0 +1,16 @@
+class Server
+  @bind: String
+  @macaw: MacawFramework::Macaw
+  @macaw_log: Logger
+  @port: Integer
+
+  @server: TCPServer
+
+  def close: -> nil
+
+  def run: -> nil
+
+  private
+
+  def call_endpoint: -> Array[untyped]
+end
