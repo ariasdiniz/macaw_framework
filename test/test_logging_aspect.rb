@@ -9,14 +9,14 @@ class LoggingAspectTest < Minitest::Test
   include LoggingAspect
 
   def setup
-    @logger = Logger.new($stdout)
+    @logger = Logger.new(STDOUT)
   end
 
   def test_logs_input_and_output
-    args = %w[arg1 arg2]
+    args = ["arg1", "arg2"]
     @logger.stub(:info, nil) do |msg|
       if msg.is_a?(String) && msg.start_with?("Input of my_endpoint:")
-        assert_match(/#{args}/, msg)
+        assert_match /#{args}/, msg
       elsif msg.is_a?(String) && msg.start_with?("Output of my_endpoint:")
         assert_equal "Output of my_endpoint: some response", msg
       end
@@ -26,7 +26,7 @@ class LoggingAspectTest < Minitest::Test
     assert_equal "some response", result
   end
 
-  def call_endpoint(_logger, *_args)
+  def call_endpoint(logger, *args)
     "some response"
   end
 end
