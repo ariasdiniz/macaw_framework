@@ -26,7 +26,8 @@ in the same directory of the script that will start the application with the fol
 {
   "macaw": {
     "port": 8080,
-    "bind": "localhost"
+    "bind": "localhost",
+    "threads": 10
   }
 }
 ```

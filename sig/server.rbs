@@ -2,9 +2,16 @@ class Server
   @bind: String
   @macaw: MacawFramework::Macaw
   @macaw_log: Logger
+  @num_threads: Integer
   @port: Integer
 
   @server: TCPServer
+
+  @threads: Integer
+
+  @work_queue: Thread::Queue
+
+  @workers: Array[Thread]
 
   def close: -> nil
 
@@ -13,4 +20,6 @@ class Server
   private
 
   def call_endpoint: -> Array[untyped]
+
+  def handle_client: -> nil
 end
