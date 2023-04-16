@@ -8,6 +8,8 @@ module MacawFramework
 
     @threads: Integer
 
+    attr_reader routes: Array[String]
+
     def delete: -> nil
 
     def get: -> nil

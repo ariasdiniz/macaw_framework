@@ -1,5 +1,7 @@
 # MacawFramework
 
+<img src="macaw_logo.png" alt= “” style="width: 30%;height: 30%;margin-left: 35%">
+
 This is a framework for developing web applications. Please have in mind that this is still a work in progress and
 it is strongly advised to not use it for production purposes for now. Actualy it supports only HTTP. HTTPS and SSL
 support will be implemented soon. Anyone who wishes to contribute is welcome.
@@ -40,7 +42,10 @@ require 'json'
 
 m = MacawFramework::Macaw.new
 
-m.get('/hello_world') do |headers, body, parameters|
+m.get('/hello_world') do |context|
+  context[:body] # Returns the request body as string
+  context[:params] # Returns query parameters and path variables as a hash
+  context[:headers] # Returns headers as a hash
   return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
 end
 

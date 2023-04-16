@@ -14,9 +14,14 @@ module MacawFramework
   # starting the web server.
   class Macaw
     ##
+    # Array containing the routes defined in the application
+    attr_reader :routes
+
+    ##
     # @param {Logger} custom_log
     def initialize(custom_log: nil, server: Server)
       begin
+        @routes = []
         @macaw_log ||= custom_log.nil? ? Logger.new($stdout) : custom_log
         config = JSON.parse(File.read("application.json"))
         @port = config["macaw"]["port"]
@@ -104,9 +109,10 @@ module MacawFramework
     def map_new_endpoint(prefix, path, &block)
       path_clean = RequestDataFiltering.extract_path(path)
       @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
-      define_singleton_method("#{prefix}_#{path_clean}", block || lambda {
+      define_singleton_method("#{prefix}.#{path_clean}", block || lambda {
         |context = { headers: {}, body: "", params: {} }|
                                                          })
+      @routes << "#{prefix}.#{path_clean}"
     end
   end
 end
