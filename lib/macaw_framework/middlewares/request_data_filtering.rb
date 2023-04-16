@@ -1,24 +1,62 @@
 # frozen_string_literal: true
 
+require_relative "../errors/endpoint_not_mapped_error"
+
 ##
 # Module containing methods to filter Strings
 module RequestDataFiltering
+  VARIABLE_PATTERN = %r{:[^/]+}.freeze
+
   ##
   # Method responsible for extracting information
   # provided by the client like Headers and Body
-  def self.parse_request_data(client)
+  def self.parse_request_data(client, routes)
     path, parameters = extract_url_parameters(client.gets.gsub("HTTP/1.1", ""))
+    parameters = {} if parameters.nil?
+
     method_name = sanitize_method_name(path)
+    method_name = select_path(method_name, routes, parameters)
     body_first_line, headers = extract_headers(client)
     body = extract_body(client, body_first_line, headers["Content-Length"].to_i)
     [path, method_name, headers, body, parameters]
+  end
+
+  def self.select_path(method_name, routes, parameters)
+    return method_name if routes.include?(method_name)
+
+    selected_route = nil
+    routes.each do |route|
+      split_route = route.split(".")
+      split_name = method_name.split(".")
+
+      next unless split_route.length == split_name.length
+      next unless match_path_with_route(split_name, split_route)
+
+      selected_route = route
+      split_route.each_with_index do |var, index|
+        parameters[var[1..].to_sym] = split_name[index] if var =~ VARIABLE_PATTERN
+      end
+      break
+    end
+
+    raise EndpointNotMappedError if selected_route.nil?
+
+    selected_route
+  end
+
+  def self.match_path_with_route(split_path, split_route)
+    split_route.each_with_index do |var, index|
+      return false if var != split_path[index] && !var.match?(VARIABLE_PATTERN)
+    end
+
+    true
   end
 
   ##
   # Method responsible for sanitizing the method name
   def self.sanitize_method_name(path)
     path = extract_path(path)
-    method_name = path.gsub("/", "_").strip.downcase
+    method_name = path.gsub("/", ".").strip.downcase
     method_name.gsub!(" ", "")
     method_name
   end
@@ -26,7 +64,7 @@ module RequestDataFiltering
   ##
   # Method responsible for extracting the path from URI
   def self.extract_path(path)
-    path[0] == "/" ? path[1..].gsub("/", "_") : path.gsub("/", "_")
+    path[0] == "/" ? path[1..].gsub("/", ".") : path.gsub("/", ".")
   end
 
   ##

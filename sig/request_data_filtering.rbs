@@ -1,0 +1,3 @@
+module RequestDataFiltering
+  VARIABLE_PATTERN: Regexp
+end

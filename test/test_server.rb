@@ -9,16 +9,13 @@ require_relative "../lib/macaw_framework/middlewares/request_data_filtering"
 require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 
 class TestEndpoint
-  def get_hello(_context)
-    "Hello, World!"
-  end
+  attr_reader :routes
 
-  def get_ok(_context)
-    ["Ok", 200]
-  end
-
-  def get_ise(_context)
-    raise StandardError, "Internal server error"
+  def initialize
+    @routes = %w[get.hello get.ok get.ise]
+    define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
+    define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
+    define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
   end
 end
 

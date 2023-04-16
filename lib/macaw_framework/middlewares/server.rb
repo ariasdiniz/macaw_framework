@@ -61,7 +61,7 @@ class Server
   private
 
   def handle_client(client)
-    path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client)
+    path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
@@ -82,5 +82,4 @@ class Server
   def call_endpoint(name, headers, body, parameters)
     @macaw.send(name.to_sym, { headers: headers, body: body, params: parameters })
   end
-
 end
