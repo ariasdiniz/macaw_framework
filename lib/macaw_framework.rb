@@ -104,7 +104,9 @@ module MacawFramework
     def map_new_endpoint(prefix, path, &block)
       path_clean = RequestDataFiltering.extract_path(path)
       @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
-      define_singleton_method("#{prefix}_#{path_clean}", block)
+      define_singleton_method("#{prefix}_#{path_clean}", block || lambda {
+        |context = { headers: {}, body: "", params: {} }|
+                                                         })
     end
   end
 end

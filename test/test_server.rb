@@ -9,15 +9,15 @@ require_relative "../lib/macaw_framework/middlewares/request_data_filtering"
 require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 
 class TestEndpoint
-  def get_hello(_headers, _body, _parameters)
+  def get_hello(_context)
     "Hello, World!"
   end
 
-  def get_ok(_headers, _body, _parameters)
+  def get_ok(_context)
     ["Ok", 200]
   end
 
-  def get_ise(_headers, _body, _parameters)
+  def get_ise(_context)
     raise StandardError, "Internal server error"
   end
 end
