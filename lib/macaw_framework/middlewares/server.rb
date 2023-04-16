@@ -79,7 +79,8 @@ class Server
     client.close
   end
 
-  def call_endpoint(name, *arg_array)
-    @macaw.send(name.to_sym, *arg_array)
+  def call_endpoint(name, headers, body, parameters)
+    @macaw.send(name.to_sym, { headers: headers, body: body, params: parameters })
   end
+
 end
