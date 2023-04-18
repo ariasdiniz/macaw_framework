@@ -2,7 +2,7 @@
 
 require "logger"
 require_relative "test_helper"
-require_relative "../lib/macaw_framework/middlewares/server"
+require_relative "../lib/macaw_framework/middlewares/rb"
 require_relative "../lib/macaw_framework/aspects/logging_aspect"
 
 class LoggingAspectTest < Minitest::Test

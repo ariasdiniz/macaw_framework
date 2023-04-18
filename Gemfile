@@ -12,3 +12,5 @@ gem "minitest", "~> 5.0"
 gem "rubocop", "~> 1.21"
 
 gem "simplecov", "~> 0.22.0"
+
+gem "prometheus-client", "~> 4.1"

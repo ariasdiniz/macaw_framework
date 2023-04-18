@@ -2,7 +2,7 @@
 
 require_relative "macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "macaw_framework/middlewares/request_data_filtering"
-require_relative "macaw_framework/middlewares/server"
+require_relative "macaw_framework/middlewares/rb"
 require_relative "macaw_framework/version"
 require "logger"
 require "socket"
