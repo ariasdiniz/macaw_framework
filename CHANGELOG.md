@@ -24,3 +24,7 @@
 - Adding log by aspect on endpoint calls to improve observability
 - Moving the server for a new separate class to respect single responsibility
 - Improved the data filtering middleware to sanitize inputs
+
+## [0.1.5] - 2023-04-16
+
+- Adding support to path variables

@@ -3,8 +3,11 @@
 <img src="macaw_logo.png" alt= “” style="width: 30%;height: 30%;margin-left: 35%">
 
 This is a framework for developing web applications. Please have in mind that this is still a work in progress and
-it is strongly advised to not use it for production purposes for now. Actualy it supports only HTTP. HTTPS and SSL
+it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. HTTPS and SSL
 support will be implemented soon. Anyone who wishes to contribute is welcome.
+
+![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=ariasdiniz&show_icons=true&theme=transparent&theme=tokyonight)
+[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=ariasdiniz)](https://github.com/anuraghazra/github-readme-stats)
 
 ## Installation
 
@@ -52,10 +55,11 @@ end
 m.start!
 ```
 
-The above example will start a server and will create a GET endpoint at localhost/hello_world.
+The example above starts a server and creates a GET endpoint at localhost/hello_world.
 
-The verb methods must always return a String or nil (Used as response) and a number corresponding the 
-HTTP Status Code to be returned to the client.
+The verb methods must always return a string or nil (used as the response) and a number corresponding to the HTTP status 
+code to be returned to the client. If an endpoint doesn't return a value or returns nil for both the string and the 
+code, a default 200 OK status and the String `Ok` as the body will be sent as the response.
 
 ## Contributing
 
