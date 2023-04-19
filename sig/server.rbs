@@ -1,5 +1,6 @@
 class Server
   @bind: String
+  @endpoints_to_cache: Array[String]
   @macaw: MacawFramework::Macaw
   @macaw_log: Logger
   @num_threads: Integer
