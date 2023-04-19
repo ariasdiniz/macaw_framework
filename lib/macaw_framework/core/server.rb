@@ -2,11 +2,13 @@
 
 require_relative "../aspects/logging_aspect"
 require_relative "../utils/http_status_code"
+require_relative "../aspects/cache_aspect"
 
 ##
 # Class responsible for providing a default
 # webserver.
 class Server
+  prepend CacheAspect
   prepend LoggingAspect
   include HttpStatusCode
 
@@ -18,13 +20,15 @@ class Server
   # @param {String} bind
   # @param {Integer} num_threads
   # @return {Server}
-  def initialize(macaw, logger, port, bind, num_threads)
+  def initialize(macaw, logger, port, bind, num_threads, endpoints_to_cache = nil, cache = nil)
     @port = port
     @bind = bind
     @macaw = macaw
     @macaw_log = logger
     @num_threads = num_threads
     @work_queue = Queue.new
+    @endpoints_to_cache = endpoints_to_cache || []
+    @cache = cache
     @workers = []
   end
 
@@ -65,7 +69,7 @@ class Server
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
-    message, status = call_endpoint(@macaw_log, method_name, headers, body, parameters)
+    message, status = call_endpoint(@macaw_log, @cache, @endpoints_to_cache, method_name, headers, body, parameters)
     status ||= 200
     message ||= "Ok"
     client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"

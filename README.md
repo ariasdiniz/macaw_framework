@@ -6,9 +6,6 @@ This is a framework for developing web applications. Please have in mind that th
 it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. HTTPS and SSL
 support will be implemented soon. Anyone who wishes to contribute is welcome.
 
-![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=ariasdiniz&show_icons=true&theme=transparent&theme=tokyonight)
-[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=ariasdiniz)](https://github.com/anuraghazra/github-readme-stats)
-
 ## Installation
 
 Install the gem and add to the application's Gemfile by executing:
@@ -32,10 +29,16 @@ in the same directory of the script that will start the application with the fol
   "macaw": {
     "port": 8080,
     "bind": "localhost",
-    "threads": 10
+    "threads": 10,
+    "cache": {
+      "cache_invalidation": 3600
+    }
   }
 }
 ```
+
+Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
+should exist in the app main directory and it need the `cache_invalidation` config set.
 
 Example of usage:
 
@@ -45,7 +48,7 @@ require 'json'
 
 m = MacawFramework::Macaw.new
 
-m.get('/hello_world') do |context|
+m.get('/hello_world', cache: true) do |context|
   context[:body] # Returns the request body as string
   context[:params] # Returns query parameters and path variables as a hash
   context[:headers] # Returns headers as a hash

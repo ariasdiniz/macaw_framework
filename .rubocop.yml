@@ -19,4 +19,10 @@ Metrics/AbcSize:
   Max: 35
 
 Metrics/CyclomaticComplexity:
-  Max: 10
+  Max: 15
+
+Metrics/ParameterLists:
+  Max: 15
+
+Metrics/PerceivedComplexity:
+  Max: 15
