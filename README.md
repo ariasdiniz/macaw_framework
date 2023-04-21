@@ -54,6 +54,14 @@ m.get('/hello_world', cache: true) do |context|
   return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
 end
 
+m.post('/hello_world/:path_variable') do |context|
+  context[:body] # Returns the request body as string
+  context[:params] # Returns query parameters and path variables as a hash
+  context[:headers] # Returns headers as a hash
+  context[:params][:path_variable] # The defined path variable can be found in :params
+  return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
+end
+
 m.start!
 ```
 
