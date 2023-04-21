@@ -8,13 +8,14 @@ require "logger"
 # in the framework.
 module LoggingAspect
   def call_endpoint(logger, *args)
-    logger.info("Request received for #{args[1]} with arguments: #{args}")
+    endpoint_name = args[2].split(".")[1..].join("/")
+    logger.info("Request received for #{endpoint_name} with arguments: #{args[3..]}")
 
     begin
       response = super(*args)
-      logger.info("Response for #{args[1]}: #{response}")
+      logger.info("Response for #{endpoint_name}: #{response}")
     rescue StandardError => e
-      logger.error("Error processing #{args[1]}: #{e.message}\n#{e.backtrace.join("\n")}")
+      logger.error("Error processing #{endpoint_name}: #{e.message}\n#{e.backtrace.join("\n")}")
       raise e
     end
 
