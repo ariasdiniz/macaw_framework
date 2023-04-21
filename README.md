@@ -3,7 +3,7 @@
 <img src="macaw_logo.png" alt= “” style="width: 30%;height: 30%;margin-left: 35%">
 
 This is a framework for developing web applications. Please have in mind that this is still a work in progress and
-it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. HTTPS and SSL
+it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. and HTTPS/SSL
 support will be implemented soon. Anyone who wishes to contribute is welcome.
 
 ## Installation
@@ -19,7 +19,6 @@ If bundler is not being used to manage dependencies, install the gem by executin
 ## Usage
 
 The usage of the framework still very simple. Actually it support 5 HTTP verbs: GET, POST, PUT, PATCH and DELETE.
-For now, the framework can't resolve client request body and headers. The support for this will be included soon.
 
 The default server port is 8080. To choose a different port, create a file with the name `application.json` 
 in the same directory of the script that will start the application with the following content:
@@ -60,9 +59,12 @@ m.start!
 
 The example above starts a server and creates a GET endpoint at localhost/hello_world.
 
+If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
+is configurable via the `application.json` file.
+
 The verb methods must always return a string or nil (used as the response) and a number corresponding to the HTTP status 
 code to be returned to the client. If an endpoint doesn't return a value or returns nil for both the string and the 
-code, a default 200 OK status and the String `Ok` as the body will be sent as the response.
+code, a default 200 OK status will be sent as the response.
 
 ## Contributing
 
