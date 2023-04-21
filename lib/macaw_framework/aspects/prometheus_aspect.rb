@@ -14,7 +14,6 @@ module PrometheusAspect
       duration = (Time.now - start_time) * 1_000
 
       endpoint_name = args[3].split(".").join("/")
-      puts args
 
       prometheus_middleware.request_duration_milliseconds.with_labels(endpoint: endpoint_name).observe(duration)
       prometheus_middleware.request_count.with_labels(endpoint: endpoint_name).increment
