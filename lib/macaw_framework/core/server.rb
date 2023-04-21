@@ -82,7 +82,7 @@ class Server
     message, status = call_endpoint(@prometheus_middleware, @macaw_log, @cache, @endpoints_to_cache,
                                     method_name, headers, body, parameters)
     status ||= 200
-    message ||= "Ok"
+    message ||= nil
     client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
