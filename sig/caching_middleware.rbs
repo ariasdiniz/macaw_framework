@@ -1,0 +1,5 @@
+class CachingMiddleware
+  @cache: Hash[String, Array[string]]
+
+  attr_accessor cache: Hash[String, Array[string]]
+end

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 ##
-# Testing
+# Middleware responsible for storing and
+# invalidating cache.
 class CachingMiddleware
   attr_accessor :cache
 

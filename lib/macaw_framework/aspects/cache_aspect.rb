@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ##
-# Testing
+# Aspect that provide cache for the endpoints.
 module CacheAspect
   def call_endpoint(cache, endpoints_to_cache, *args)
     return super(*args) unless endpoints_to_cache.include?(args[0]) && !cache.nil?

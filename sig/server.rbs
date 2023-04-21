@@ -1,11 +1,14 @@
 class Server
   @bind: String
+  @cache: CachingMiddleware
   @endpoints_to_cache: Array[String]
   @macaw: MacawFramework::Macaw
   @macaw_log: Logger
   @num_threads: Integer
   @port: Integer
 
+  @prometheus: untyped
+  @prometheus_middleware: untyped
   @server: TCPServer
 
   @threads: Integer
