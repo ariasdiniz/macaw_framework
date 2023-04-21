@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
 require_relative "../utils/http_status_code"
 require_relative "../aspects/cache_aspect"
@@ -10,7 +11,9 @@ require_relative "../aspects/cache_aspect"
 class Server
   prepend CacheAspect
   prepend LoggingAspect
+  prepend PrometheusAspect
   include HttpStatusCode
+  # rubocop:disable Metrics/ParameterLists
 
   ##
   # Create a new instance of Server.
@@ -19,8 +22,11 @@ class Server
   # @param {Integer} port
   # @param {String} bind
   # @param {Integer} num_threads
+  # @param {CachingMiddleware} cache
+  # @param {Prometheus::Client:Registry} prometheus
   # @return {Server}
-  def initialize(macaw, logger, port, bind, num_threads, endpoints_to_cache = nil, cache = nil)
+  def initialize(macaw, logger, port, bind, num_threads, endpoints_to_cache = nil, cache = nil, prometheus = nil,
+                 prometheus_middleware = nil)
     @port = port
     @bind = bind
     @macaw = macaw
@@ -29,8 +35,12 @@ class Server
     @work_queue = Queue.new
     @endpoints_to_cache = endpoints_to_cache || []
     @cache = cache
+    @prometheus = prometheus
+    @prometheus_middleware = prometheus_middleware
     @workers = []
   end
+
+  # rubocop:enable Metrics/ParameterLists
 
   ##
   # Start running the webserver.
@@ -69,17 +79,17 @@ class Server
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
-    message, status = call_endpoint(@macaw_log, @cache, @endpoints_to_cache, method_name, headers, body, parameters)
+    message, status = call_endpoint(@prometheus_middleware, @macaw_log, @cache, @endpoints_to_cache,
+                                    method_name, headers, body, parameters)
     status ||= 200
     message ||= "Ok"
     client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"
-    client.close
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
-    client.close
   rescue StandardError => e
     client.print "HTTP/1.1 500 Internal Server Error\r\n\r\n"
     @macaw_log.info("Error: #{e}")
+  ensure
     client.close
   end
 

@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "macaw_framework/errors/endpoint_not_mapped_error"
+require_relative "macaw_framework/middlewares/prometheus_middleware"
 require_relative "macaw_framework/middlewares/request_data_filtering"
 require_relative "macaw_framework/middlewares/caching_middleware"
 require_relative "macaw_framework/core/server"
 require_relative "macaw_framework/version"
+require "prometheus/client"
 require "logger"
 require "socket"
 require "json"
@@ -31,6 +33,9 @@ module MacawFramework
         unless config["macaw"]["cache"].nil?
           @cache = CachingMiddleware.new(config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
         end
+        @prometheus = Prometheus::Client::Registry.new if config["macaw"]["prometheus"]
+        @prometheus_middleware = PrometheusMiddleware.new if config["macaw"]["prometheus"]
+        @prometheus_middleware.configure_prometheus(@prometheus, config, self) if config["macaw"]["prometheus"]
       rescue StandardError => e
         @macaw_log.error(e.message)
       end
@@ -38,7 +43,10 @@ module MacawFramework
       @bind ||= "localhost"
       @threads ||= 5
       @endpoints_to_cache = []
-      @server = server.new(self, @macaw_log, @port, @bind, @threads, @endpoints_to_cache, @cache)
+      @prometheus ||= nil
+      @prometheus_middleware ||= nil
+      @server = server.new(self, @macaw_log, @port, @bind, @threads, @endpoints_to_cache, @cache, @prometheus,
+                           @prometheus_middleware)
     end
 
     ##
@@ -114,7 +122,6 @@ module MacawFramework
 
     def map_new_endpoint(prefix, cache, path, &block)
       @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" if cache
-      @macaw_log.info "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" if cache
       path_clean = RequestDataFiltering.extract_path(path)
       @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
       define_singleton_method("#{prefix}.#{path_clean}", block || lambda {

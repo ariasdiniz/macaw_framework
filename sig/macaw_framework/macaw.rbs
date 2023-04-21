@@ -2,9 +2,11 @@ module MacawFramework
   class Macaw
     @bind: string
     @cache: untyped
+    @endpoints_to_cache: Array[String]
     @macaw_log: Logger
     @port: int
 
+    @prometheus: untyped
     @server: Server
 
     @threads: Integer
