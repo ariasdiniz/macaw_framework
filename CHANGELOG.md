@@ -28,3 +28,9 @@
 ## [0.1.5] - 2023-04-16
 
 - Adding support to path variables
+
+## [0.2.0] - 2023-04-22
+
+- Adding middleware for integration with Prometheus to collect metrics
+- Adding a simple caching mechanism that can be enabled separately for each endpoint
+- Performance and functional optimizations
