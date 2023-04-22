@@ -51,7 +51,7 @@ m.get('/hello_world', cache: true) do |context|
   context[:body] # Returns the request body as string
   context[:params] # Returns query parameters and path variables as a hash
   context[:headers] # Returns headers as a hash
-  return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
+  return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200, {"Content-Type" => "application/json"}
 end
 
 m.post('/hello_world/:path_variable') do |context|
@@ -70,9 +70,9 @@ The example above starts a server and creates a GET endpoint at localhost/hello_
 If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
 is configurable via the `application.json` file.
 
-The verb methods must always return a string or nil (used as the response) and a number corresponding to the HTTP status 
-code to be returned to the client. If an endpoint doesn't return a value or returns nil for both the string and the 
-code, a default 200 OK status will be sent as the response.
+The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status 
+code to be returned to the client and the response headers as a Hash or nil. If an endpoint doesn't return a value or 
+returns nil for body, status code and headers, a default 200 OK status will be sent as the response.
 
 ## Contributing
 

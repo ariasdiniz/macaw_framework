@@ -2,7 +2,7 @@
 
 require_relative "macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "macaw_framework/middlewares/prometheus_middleware"
-require_relative "macaw_framework/middlewares/request_data_filtering"
+require_relative "macaw_framework/data_filters/request_data_filtering"
 require_relative "macaw_framework/middlewares/caching_middleware"
 require_relative "macaw_framework/core/server"
 require_relative "macaw_framework/version"

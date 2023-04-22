@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
+require_relative "../data_filters/response_data_filter"
 require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
-require_relative "../utils/http_status_code"
 require_relative "../aspects/cache_aspect"
 
 ##
@@ -12,7 +12,6 @@ class Server
   prepend CacheAspect
   prepend LoggingAspect
   prepend PrometheusAspect
-  include HttpStatusCode
   # rubocop:disable Metrics/ParameterLists
 
   ##
@@ -79,11 +78,12 @@ class Server
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
-    message, status = call_endpoint(@prometheus_middleware, @macaw_log, @cache, @endpoints_to_cache,
-                                    method_name, headers, body, parameters)
+    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache, @endpoints_to_cache,
+                                                      method_name, headers, body, parameters)
     status ||= 200
     message ||= nil
-    client.puts "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]} \r\n\r\n#{message}"
+    response_headers ||= nil
+    client.puts ResponseDataFilter.mount_response(status, response_headers, message)
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
   rescue StandardError => e

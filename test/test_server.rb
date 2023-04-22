@@ -5,7 +5,7 @@ require "socket"
 require_relative "test_helper"
 require_relative "../lib/macaw_framework/aspects/logging_aspect"
 require_relative "../lib/macaw_framework/utils/http_status_code"
-require_relative "../lib/macaw_framework/middlewares/request_data_filtering"
+require_relative "../lib/macaw_framework/data_filters/request_data_filtering"
 require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 
 class TestEndpoint
