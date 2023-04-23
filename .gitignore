@@ -9,3 +9,6 @@
 /.idea/
 Gemfile.lock
 *.gem
+sonar-project.properties
+/.scannerwork/
+utils.txt
