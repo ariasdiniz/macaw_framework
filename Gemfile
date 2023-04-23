@@ -11,6 +11,10 @@ gem "minitest", "~> 5.0"
 
 gem "rubocop", "~> 1.21"
 
-gem "simplecov", "~> 0.22.0"
-
 gem "prometheus-client", "~> 4.1"
+
+group :test do
+  gem "simplecov", "~> 0.21.2"
+  gem "simplecov-json"
+  gem "simplecov_json_formatter", "~> 0.1.2"
+end
