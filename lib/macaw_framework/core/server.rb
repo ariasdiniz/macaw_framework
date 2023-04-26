@@ -24,17 +24,16 @@ class Server
   # @param {CachingMiddleware} cache
   # @param {Prometheus::Client:Registry} prometheus
   # @return {Server}
-  def initialize(macaw, logger, port, bind, num_threads, endpoints_to_cache = nil, cache = nil, prometheus = nil,
-                 prometheus_middleware = nil)
-    @port = port
-    @bind = bind
+  def initialize(macaw, endpoints_to_cache = nil, cache = nil, prometheus = nil, prometheus_mw = nil)
+    @port = macaw.port
+    @bind = macaw.bind
     @macaw = macaw
-    @macaw_log = logger
-    @num_threads = num_threads
+    @macaw_log = macaw.macaw_log
+    @num_threads = macaw.threads
     @work_queue = Queue.new
     @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [] }
     @prometheus = prometheus
-    @prometheus_middleware = prometheus_middleware
+    @prometheus_middleware = prometheus_mw
     @workers = []
   end
 

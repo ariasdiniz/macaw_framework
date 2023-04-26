@@ -9,10 +9,14 @@ require_relative "../lib/macaw_framework/data_filters/request_data_filtering"
 require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 
 class TestEndpoint
-  attr_reader :routes
+  attr_reader :routes, :port, :bind, :threads, :macaw_log
 
   def initialize
     @routes = %w[get.hello get.ok get.ise]
+    @port = 9292
+    @bind = "localhost"
+    @threads = 4
+    @macaw_log = Logger.new($stdout)
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
     define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
@@ -42,7 +46,7 @@ class ServerTest < Minitest::Test
     @port = 9292
     @bind = "localhost"
     @num_threads = 4
-    @server = Server.new(@macaw, @logger, @port, @bind, @num_threads)
+    @server = Server.new(@macaw)
   end
 
   def teardown
