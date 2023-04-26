@@ -8,8 +8,8 @@ require "logger"
 # in the framework.
 module LoggingAspect
   def call_endpoint(logger, *args)
-    endpoint_name = args[2].split(".")[1..].join("/")
-    logger.info("Request received for #{endpoint_name} with arguments: #{args[3..]}")
+    endpoint_name = args[1].split(".")[1..].join("/")
+    logger.info("Request received for #{endpoint_name} with arguments: #{args[2..]}")
 
     begin
       response = super(*args)
