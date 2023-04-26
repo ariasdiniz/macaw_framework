@@ -32,8 +32,7 @@ class Server
     @macaw_log = logger
     @num_threads = num_threads
     @work_queue = Queue.new
-    @endpoints_to_cache = endpoints_to_cache || []
-    @cache = cache
+    @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [] }
     @prometheus = prometheus
     @prometheus_middleware = prometheus_middleware
     @workers = []
@@ -77,9 +76,11 @@ class Server
     path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
+    client_data = get_client_data(body, headers, parameters)
+
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
-    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache, @endpoints_to_cache,
-                                                      method_name, headers, body, parameters)
+    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
+                                                      method_name, client_data)
     status ||= 200
     message ||= nil
     response_headers ||= nil
@@ -93,7 +94,14 @@ class Server
     client.close
   end
 
-  def call_endpoint(name, headers, body, parameters)
-    @macaw.send(name.to_sym, { headers: headers, body: body, params: parameters })
+  def call_endpoint(name, client_data)
+    @macaw.send(
+      name.to_sym,
+      { headers: client_data[:headers], body: client_data[:body], params: client_data[:parameters] }
+    )
+  end
+
+  def get_client_data(body, headers, parameters)
+    { body: body, headers: headers, parameters: parameters }
   end
 end

@@ -1,6 +1,6 @@
 class Server
   @bind: String
-  @cache: CachingMiddleware
+  @cache: Hash[Symbol, Array]
   @endpoints_to_cache: Array[String]
   @macaw: MacawFramework::Macaw
   @macaw_log: Logger

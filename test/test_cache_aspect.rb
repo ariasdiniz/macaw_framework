@@ -22,7 +22,7 @@ end
 class TestCacheAspect < Minitest::Test
   def test_no_cache
     test_class = TestClass.new
-    response = test_class.call_endpoint(nil, "method1", "a", "a", "a")
+    response = test_class.call_endpoint({ cache: nil, endpoints_to_cache: nil }, "method1", { body: "a", headers: "a" })
 
     assert_equal "Original method response", response
   end
@@ -31,7 +31,8 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method2"]
-    response = test_class.call_endpoint(cache, endpoints_to_cache, "a", "a", "a")
+    response = test_class.call_endpoint({ cache: cache, endpoints_to_cache: endpoints_to_cache }, endpoints_to_cache,
+                                        "a", { body: "a", headers: "a" })
 
     assert_equal "Original method response", response
   end
@@ -40,8 +41,11 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
-    cache.cache[:"[\"a\", \"a\"]"] = ["Cached response", Time.now]
-    response = test_class.call_endpoint(cache, endpoints_to_cache, "method1", "a", "a", "a")
+    cache.cache[:"[{:body=>\"a\", :headers=>\"a\"}]"] = ["Cached response", Time.now]
+    response = test_class.call_endpoint(
+      { cache: cache, endpoints_to_cache: endpoints_to_cache },
+      "method1", { body: "a", headers: "a" }
+    )
 
     assert_equal "Cached response", response
   end
@@ -50,9 +54,12 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
-    response = test_class.call_endpoint(cache, endpoints_to_cache, "method1", "a", "a", "a")
+    response = test_class.call_endpoint(
+      { cache: cache, endpoints_to_cache: endpoints_to_cache },
+      "method1", { body: "a", headers: "a" }
+    )
 
     assert_equal "Original method response", response
-    assert_equal("Original method response", cache.cache[:"[\"a\", \"a\"]"][0])
+    assert_equal("Original method response", cache.cache[:"[{:body=>\"a\", :headers=>\"a\"}]"][0])
   end
 end
