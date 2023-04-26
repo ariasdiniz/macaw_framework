@@ -12,10 +12,11 @@ class TestClass
 end
 
 class CacheMock
-  attr_accessor :cache
+  attr_accessor :cache, :mutex
 
   def initialize
     @cache = {}
+    @mutex = Mutex.new
   end
 end
 
