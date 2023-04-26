@@ -1,17 +1,21 @@
 module MacawFramework
   class Macaw
-    @bind: string
+    @bind: String
     @cache: untyped
     @endpoints_to_cache: Array[String]
     @macaw_log: Logger
-    @port: int
 
     @prometheus: untyped
     @server: Server
 
     @threads: Integer
 
+    attr_reader bind: String
+    attr_reader macaw_log: Logger
+    attr_reader port: Integer
     attr_reader routes: Array[String]
+
+    attr_reader threads: Integer
 
     def delete: -> nil
 

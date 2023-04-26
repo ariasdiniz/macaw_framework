@@ -18,7 +18,7 @@ module MacawFramework
   class Macaw
     ##
     # Array containing the routes defined in the application
-    attr_reader :routes
+    attr_reader :routes, :port, :bind, :threads, :macaw_log
 
     ##
     # @param {Logger} custom_log
@@ -45,8 +45,7 @@ module MacawFramework
       @endpoints_to_cache = []
       @prometheus ||= nil
       @prometheus_middleware ||= nil
-      @server = server.new(self, @macaw_log, @port, @bind, @threads, @endpoints_to_cache, @cache, @prometheus,
-                           @prometheus_middleware)
+      @server = server.new(self, @endpoints_to_cache, @cache, @prometheus, @prometheus_middleware)
     end
 
     ##
