@@ -1,7 +1,5 @@
 # MacawFramework
 
-<img src="macaw_logo.png" alt= “” style="width: 30%;height: 30%;margin-left: 35%">
-
 This is a framework for developing web applications. Please have in mind that this is still a work in progress and
 it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. and HTTPS/SSL
 support will be implemented soon. Anyone who wishes to contribute is welcome.
@@ -31,6 +29,13 @@ in the same directory of the script that will start the application with the fol
     "threads": 10,
     "cache": {
       "cache_invalidation": 3600
+    },
+    "prometheus": {
+      "endpoint": "/metrics"
+    },
+    "rate_limiting": {
+      "window": 10,
+      "max_requests": 3
     }
   }
 }
@@ -38,6 +43,9 @@ in the same directory of the script that will start the application with the fol
 
 Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
 should exist in the app main directory and it need the `cache_invalidation` config set.
+
+Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
+exists inside `application.json`.
 
 Example of usage:
 
