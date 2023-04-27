@@ -35,14 +35,21 @@ in the same directory of the script that will start the application with the fol
     },
     "rate_limiting": {
       "window": 10,
-      "max_requests": 3
+      "max_requests": 3,
+      "ignore_headers": [
+        "header-to-be-ignored-from-caching-strategy",
+        "another-header-to-be-ignored-from-caching-strategy"
+      ]
     }
   }
 }
 ```
 
 Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
-should exist in the app main directory and it need the `cache_invalidation` config set.
+should exist in the app main directory and it need the `cache_invalidation` config set. It is possible to
+provide a list of strings in the property `ignore_headers`. All the client headers with the same name of any
+of the strings provided will be ignored from caching strategy. This is useful to exclude headers like 
+correlation IDs from the caching strategy.
 
 Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
 exists inside `application.json`.

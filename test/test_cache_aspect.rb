@@ -42,10 +42,10 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
-    cache.cache[:"[{:body=>\"a\", :headers=>\"a\"}]"] = ["Cached response", Time.now]
+    cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache },
-      "method1", { body: "a", headers: "a" }
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      "method1", { body: "a", params: nil, headers: { "a" => "b" } }
     )
 
     assert_equal "Cached response", response
@@ -56,11 +56,43 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache },
-      "method1", { body: "a", headers: "a" }
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      "method1", { body: "a", params: nil, headers: { "a" => "b" } }
     )
 
     assert_equal "Original method response", response
-    assert_equal("Original method response", cache.cache[:"[{:body=>\"a\", :headers=>\"a\"}]"][0])
+    assert_equal(
+      "Original method response",
+      cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
+    )
+  end
+
+  def test_cache_miss_with_ignored_header
+    test_class = TestClass.new
+    cache = CacheMock.new
+    endpoints_to_cache = ["method1"]
+    response = test_class.call_endpoint(
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: ["correlation-id"] },
+      "method1", { body: "a", params: nil, headers: { "a" => "b", "correlation-id" => "unique-id-1" } }
+    )
+
+    assert_equal "Original method response", response
+    assert_equal(
+      "Original method response",
+      cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
+    )
+  end
+
+  def test_cache_hit_with_ignored_header
+    test_class = TestClass.new
+    cache = CacheMock.new
+    endpoints_to_cache = ["method1"]
+    cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
+    response = test_class.call_endpoint(
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: ["correlation-id"] },
+      "method1", { body: "a", params: nil, headers: { "a" => "b", "correlation-id" => "unique-id-2" } }
+    )
+
+    assert_equal "Cached response", response
   end
 end
