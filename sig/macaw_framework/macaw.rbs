@@ -2,15 +2,18 @@ module MacawFramework
   class Macaw
     @bind: String
     @cache: untyped
+    @config: Hash[String, untyped]
     @endpoints_to_cache: Array[String]
     @macaw_log: Logger
 
     @prometheus: untyped
+    @prometheus_middleware: untyped
     @server: Server
 
     @threads: Integer
 
     attr_reader bind: String
+    attr_reader config: Hash[String, untyped]
     attr_reader macaw_log: Logger
     attr_reader port: Integer
     attr_reader routes: Array[String]

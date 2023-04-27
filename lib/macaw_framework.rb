@@ -18,7 +18,7 @@ module MacawFramework
   class Macaw
     ##
     # Array containing the routes defined in the application
-    attr_reader :routes, :port, :bind, :threads, :macaw_log
+    attr_reader :routes, :port, :bind, :threads, :macaw_log, :config
 
     ##
     # @param {Logger} custom_log
@@ -26,21 +26,22 @@ module MacawFramework
       begin
         @routes = []
         @macaw_log ||= custom_log.nil? ? Logger.new($stdout) : custom_log
-        config = JSON.parse(File.read("application.json"))
-        @port = config["macaw"]["port"] || 8080
-        @bind = config["macaw"]["bind"] || "localhost"
-        @threads = config["macaw"]["threads"] || 5
-        unless config["macaw"]["cache"].nil?
-          @cache = CachingMiddleware.new(config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
+        @config = JSON.parse(File.read("application.json"))
+        @port = @config["macaw"]["port"] || 8080
+        @bind = @config["macaw"]["bind"] || "localhost"
+        @threads = @config["macaw"]["threads"] || 5
+        unless @config["macaw"]["cache"].nil?
+          @cache = CachingMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
         end
-        @prometheus = Prometheus::Client::Registry.new if config["macaw"]["prometheus"]
-        @prometheus_middleware = PrometheusMiddleware.new if config["macaw"]["prometheus"]
-        @prometheus_middleware.configure_prometheus(@prometheus, config, self) if config["macaw"]["prometheus"]
+        @prometheus = Prometheus::Client::Registry.new if @config["macaw"]["prometheus"]
+        @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
+        @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
       rescue StandardError => e
         @macaw_log.error(e.message)
       end
       @port ||= 8080
       @bind ||= "localhost"
+      @config ||= nil
       @threads ||= 5
       @endpoints_to_cache = []
       @prometheus ||= nil
