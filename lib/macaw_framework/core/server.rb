@@ -34,13 +34,15 @@ class Server
     @num_threads = macaw.threads
     @work_queue = Queue.new
     if @macaw.config&.dig("macaw", "rate_limiting")
+      ignored_headers = @macaw.config["macaw"]["rate_limiting"]["ignore_headers"] || []
       @rate_limit = RateLimiterMiddleware.new(
         @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
         @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
       )
     end
     @rate_limit ||= nil
-    @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [] }
+    ignored_headers ||= nil
+    @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [], ignored_headers: ignored_headers }
     @prometheus = prometheus
     @prometheus_middleware = prometheus_mw
     @workers = []
