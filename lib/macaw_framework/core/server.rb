@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require_relative "../middlewares/rate_limiter_middleware"
 require_relative "../data_filters/response_data_filter"
+require_relative "../errors/too_many_requests_error"
 require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
 require_relative "../aspects/cache_aspect"
@@ -31,6 +33,13 @@ class Server
     @macaw_log = macaw.macaw_log
     @num_threads = macaw.threads
     @work_queue = Queue.new
+    if @macaw.config&.dig("macaw", "rate_limiting")
+      @rate_limit = RateLimiterMiddleware.new(
+        @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
+        @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
+      )
+    end
+    @rate_limit ||= nil
     @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [] }
     @prometheus = prometheus
     @prometheus_middleware = prometheus_mw
@@ -74,6 +83,7 @@ class Server
   def handle_client(client)
     path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
+    raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
     client_data = get_client_data(body, headers, parameters)
 
@@ -84,6 +94,8 @@ class Server
     message ||= nil
     response_headers ||= nil
     client.puts ResponseDataFilter.mount_response(status, response_headers, message)
+  rescue TooManyRequestsError
+    client.print "HTTP/1.1 429 Too Many Requests\r\n\r\n"
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
   rescue StandardError => e

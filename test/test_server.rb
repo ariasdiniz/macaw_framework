@@ -7,9 +7,11 @@ require_relative "../lib/macaw_framework/aspects/logging_aspect"
 require_relative "../lib/macaw_framework/utils/http_status_code"
 require_relative "../lib/macaw_framework/data_filters/request_data_filtering"
 require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
+require_relative "../lib/macaw_framework/errors/too_many_requests_error"
 
 class TestEndpoint
   attr_reader :routes, :port, :bind, :threads, :macaw_log
+  attr_accessor :config
 
   def initialize
     @routes = %w[get.hello get.ok get.ise]
@@ -17,6 +19,7 @@ class TestEndpoint
     @bind = "localhost"
     @threads = 4
     @macaw_log = Logger.new($stdout)
+    @config = nil
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
     define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
@@ -113,6 +116,51 @@ class ServerTest < Minitest::Test
     client.close
 
     assert_match %r{HTTP/1.1 500 Internal Server Error}, response
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_rate_limiting
+    @macaw.config = { "macaw" => { "rate_limiting" => { "window" => 1, "max_requests" => 1 } } }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match(/Hello, World!/, response)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match %r{HTTP/1.1 429 Too Many Requests}, response
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_post_request
+    @macaw.routes << "post.hello"
+    @macaw.define_singleton_method("post.hello", ->(_context) { "Hello, POST!" })
+
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "POST /hello HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match(/Hello, POST!/, response)
 
     @server.close
     server_thread.join
