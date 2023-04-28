@@ -6,6 +6,7 @@ require_relative "../errors/too_many_requests_error"
 require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
 require_relative "../aspects/cache_aspect"
+require "openssl"
 
 ##
 # Class responsible for providing a default
@@ -33,13 +34,8 @@ class Server
     @macaw_log = macaw.macaw_log
     @num_threads = macaw.threads
     @work_queue = Queue.new
-    if @macaw.config&.dig("macaw", "rate_limiting")
-      ignored_headers = @macaw.config["macaw"]["rate_limiting"]["ignore_headers"] || []
-      @rate_limit = RateLimiterMiddleware.new(
-        @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
-        @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
-      )
-    end
+    ignored_headers = set_rate_limiting
+    set_ssl
     @rate_limit ||= nil
     ignored_headers ||= nil
     @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [], ignored_headers: ignored_headers }
@@ -54,6 +50,7 @@ class Server
   # Start running the webserver.
   def run
     @server = TCPServer.new(@bind, @port)
+    @server = OpenSSL::SSL::SSLServer.new(@server, @context) if @context
     @num_threads.times do
       @workers << Thread.new do
         loop do
@@ -67,6 +64,8 @@ class Server
 
     loop do
       @work_queue << @server.accept
+    rescue OpenSSL::SSL::SSLError => e
+      @macaw_log.error("SSL error: #{e.message}")
     rescue IOError, Errno::EBADF
       break
     end
@@ -105,6 +104,31 @@ class Server
     @macaw_log.info("Error: #{e}")
   ensure
     client.close
+  end
+
+  def set_rate_limiting
+    if @macaw.config&.dig("macaw", "rate_limiting")
+      ignored_headers = @macaw.config["macaw"]["rate_limiting"]["ignore_headers"] || []
+      @rate_limit = RateLimiterMiddleware.new(
+        @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
+        @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
+      )
+    end
+    ignored_headers
+  end
+
+  def set_ssl
+    if @macaw.config&.dig("macaw", "ssl")
+      @context = OpenSSL::SSL::SSLContext.new
+      @context.cert = OpenSSL::X509::Certificate.new(File.read(@macaw.config["macaw"]["ssl"]["cert_file_name"]))
+      @context.key = OpenSSL::PKey::RSA.new(File.read(@macaw.config["macaw"]["ssl"]["key_file_name"]))
+    end
+    @context ||= nil
+  rescue IOError => e
+    @macaw_log.error("It was not possible to read files #{@macaw.config["macaw"]["ssl"]["cert_file_name"]} and
+#{@macaw.config["macaw"]["ssl"]["key_file_name"]}. Please assure the files exists and their names are correct.")
+    @macaw_log.error(e.backtrace)
+    raise e
   end
 
   def call_endpoint(name, client_data)

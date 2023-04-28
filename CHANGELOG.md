@@ -34,3 +34,10 @@
 - Adding middleware for integration with Prometheus to collect metrics
 - Adding a simple caching mechanism that can be enabled separately for each endpoint
 - Performance and functional optimizations
+
+## [1.0.0] - 2023-04-28
+
+- Adding support to HTTPS/SSL using security certificates
+- Implemented a middleware for rate limiting to prevent DoS attacks
+- Improvement of caching strategy to ignore optional headers
+- First production-ready version
