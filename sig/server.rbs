@@ -1,6 +1,7 @@
 class Server
   @bind: String
   @cache: Hash[Symbol, Array]
+  @context: OpenSSL::SSL::SSLContext
   @endpoints_to_cache: Array[String]
   @macaw: MacawFramework::Macaw
   @macaw_log: Logger
@@ -9,7 +10,7 @@ class Server
 
   @prometheus: untyped
   @prometheus_middleware: untyped
-  @server: TCPServer
+  @server: TCPServer|OpenSSL::SSL::SSLServer
 
   @threads: Integer
 

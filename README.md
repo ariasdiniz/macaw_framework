@@ -40,6 +40,12 @@ in the same directory of the script that will start the application with the fol
         "header-to-be-ignored-from-caching-strategy",
         "another-header-to-be-ignored-from-caching-strategy"
       ]
+    },
+    "ssl": {
+      "ssl": {
+        "cert_file_name": "path/to/cert/file/file.crt",
+        "key_file_name": "path/to/cert/key/file.key"
+      }
     }
   }
 }
@@ -53,6 +59,9 @@ correlation IDs from the caching strategy.
 
 Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
 exists inside `application.json`.
+
+If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
+will be wrapped with HTTPS security using the provided certificate.
 
 Example of usage:
 
