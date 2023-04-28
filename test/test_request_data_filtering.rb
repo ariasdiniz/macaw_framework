@@ -20,7 +20,7 @@ class TestRequestDataFiltering < Minitest::Test
     }
 
     filter = RequestDataFiltering
-    client_data = File.open("./test/client_data.txt")
+    client_data = File.open("./test/data/client_data.txt")
     path, method_name, headers, body, parameters = filter.parse_request_data(client_data, [expected_method_name])
 
     assert path == expected_path
@@ -47,7 +47,7 @@ class TestRequestDataFiltering < Minitest::Test
     }
 
     filter = RequestDataFiltering
-    client_data = File.open("./test/client_data_path_variable.txt")
+    client_data = File.open("./test/data/client_data_path_variable.txt")
     path, method_name, headers, body, parameters = filter.parse_request_data(client_data, [expected_method_name])
 
     assert path == expected_path
@@ -75,7 +75,7 @@ class TestRequestDataFiltering < Minitest::Test
     routes = %w[post.test.:var.actionnn.:var2 post.teste.:var.action.:var2 post.test.:var.action.:var2]
 
     filter = RequestDataFiltering
-    client_data = File.open("./test/client_data_path_variable.txt")
+    client_data = File.open("./test/data/client_data_path_variable.txt")
     path, method_name, headers, body, parameters = filter.parse_request_data(client_data, routes)
 
     assert path == expected_path
@@ -89,7 +89,7 @@ class TestRequestDataFiltering < Minitest::Test
     expected_method_name = "post.test.:var.action.:var2.:var3"
 
     filter = RequestDataFiltering
-    client_data = File.open("./test/client_data_path_variable.txt")
+    client_data = File.open("./test/data/client_data_path_variable.txt")
     assert_raises(EndpointNotMappedError) { filter.parse_request_data(client_data, [expected_method_name]) }
   end
 end

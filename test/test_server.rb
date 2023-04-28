@@ -2,6 +2,8 @@
 
 require "logger"
 require "socket"
+require "net/http"
+require "openssl"
 require_relative "test_helper"
 require_relative "../lib/macaw_framework/aspects/logging_aspect"
 require_relative "../lib/macaw_framework/utils/http_status_code"
@@ -161,6 +163,34 @@ class ServerTest < Minitest::Test
     client.close
 
     assert_match(/Hello, POST!/, response)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_ssl_feature
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "cert_file_name" => "./test/data/test_cert.pem",
+          "key_file_name" => "./test/data/test_key.pem"
+        }
+      }
+    }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    http = Net::HTTP.new(@bind, @port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    request = Net::HTTP::Get.new("/hello")
+    response = http.request(request)
+
+    assert_equal "200", response.code
+    assert_match(/Hello, World!/, response.body)
 
     @server.close
     server_thread.join
