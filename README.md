@@ -1,8 +1,6 @@
 # MacawFramework
 
-This is a framework for developing web applications. Please have in mind that this is still a work in progress and
-it is strongly advised to not use it for production purposes for now. Actually it supports only HTTP. and HTTPS/SSL
-support will be implemented soon. Anyone who wishes to contribute is welcome.
+This is a framework for developing web applications, with a focus on lightweight backend applications. Anyone interested in contributing is more than welcome.
 
 ## Installation
 
