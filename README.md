@@ -1,6 +1,17 @@
 # MacawFramework
 
-This is a framework for developing web applications, with a focus on lightweight backend applications. Anyone interested in contributing is more than welcome.
+MacawFramework is a lightweight, easy-to-use web framework for Ruby designed to simplify the development of small to 
+medium-sized web applications. With support for various HTTP methods, caching, and session management, MacawFramework 
+provides developers with the essential tools to quickly build and deploy their applications.
+
+## Features
+
+- Simple routing with support for GET, POST, PUT, PATCH, and DELETE HTTP methods
+- Caching middleware for improved performance
+- Session management with server-side in-memory storage
+- Basic rate limiting and SSL support
+- Prometheus integration for monitoring and metrics
+- Lightweight and easy to learn
 
 ## Installation
 
@@ -14,10 +25,56 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-The usage of the framework still very simple. Actually it support 5 HTTP verbs: GET, POST, PUT, PATCH and DELETE.
+### Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods
 
-The default server port is 8080. To choose a different port, create a file with the name `application.json` 
-in the same directory of the script that will start the application with the following content:
+```ruby
+require 'macaw_framework'
+
+m = MacawFramework::Macaw.new
+
+m.get('/hello_world') do |_context|
+  return "Hello, World!", 200, {"Content-Type" => "text/plain"}
+end
+
+m.post('/submit_data/:path_variable') do |context|
+  context[:body] # Client body data
+  context[:params] # Client params, like url parameters or variables
+  context[:headers] # Client headers
+  context[:params][:path_variable] # The defined path variable can be found in :params
+  context[:client] # Client session
+end
+
+m.start!
+
+```
+
+### Caching: Improve performance by caching responses and configuring cache invalidation
+
+```ruby
+m.get('/cached_data', cache: true) do |context|
+# Retrieve data
+end
+```
+
+### Session management: Handle user sessions securely with server-side in-memory storage
+
+```ruby
+m.get('/login') do |context|
+  # Authenticate user
+  context[:session][:user_id] = user_id
+end
+
+m.get('/dashboard') do |context|
+  # Check if the user is logged in
+  if context[:session][:user_id]
+    # Show dashboard
+  else
+    # Redirect to login
+  end
+end
+```
+
+### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
 
 ```json
 {
@@ -26,28 +83,34 @@ in the same directory of the script that will start the application with the fol
     "bind": "localhost",
     "threads": 10,
     "cache": {
-      "cache_invalidation": 3600
+      "cache_invalidation": 3600,
+      "ignore_headers": [
+        "header-to-be-ignored-from-caching-strategy",
+        "another-header-to-be-ignored-from-caching-strategy"
+      ]
     },
     "prometheus": {
       "endpoint": "/metrics"
     },
     "rate_limiting": {
       "window": 10,
-      "max_requests": 3,
-      "ignore_headers": [
-        "header-to-be-ignored-from-caching-strategy",
-        "another-header-to-be-ignored-from-caching-strategy"
-      ]
+      "max_requests": 3
     },
     "ssl": {
-      "ssl": {
-        "cert_file_name": "path/to/cert/file/file.crt",
-        "key_file_name": "path/to/cert/key/file.key"
-      }
+      "cert_file_name": "path/to/cert/file/file.crt",
+      "key_file_name": "path/to/cert/key/file.key"
     }
   }
 }
 ```
+
+### Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support
+
+```shell
+curl http://localhost:8080/metrics
+```
+
+### Tips
 
 Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
 should exist in the app main directory and it need the `cache_invalidation` config set. It is possible to
@@ -55,39 +118,19 @@ provide a list of strings in the property `ignore_headers`. All the client heade
 of the strings provided will be ignored from caching strategy. This is useful to exclude headers like 
 correlation IDs from the caching strategy.
 
+URL parameters like `...endOfUrl?key1=value1&key2=value2` can be find in the `context[:params]`
+
+```ruby
+m.get('/test_params') do |context|
+  context[:params]["key1"] # returns: value1
+end
+```
+
 Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
 exists inside `application.json`.
 
 If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
 will be wrapped with HTTPS security using the provided certificate.
-
-Example of usage:
-
-```ruby
-require 'macaw_framework'
-require 'json'
-
-m = MacawFramework::Macaw.new
-
-m.get('/hello_world', cache: true) do |context|
-  context[:body] # Returns the request body as string
-  context[:params] # Returns query parameters and path variables as a hash
-  context[:headers] # Returns headers as a hash
-  return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200, {"Content-Type" => "application/json"}
-end
-
-m.post('/hello_world/:path_variable') do |context|
-  context[:body] # Returns the request body as string
-  context[:params] # Returns query parameters and path variables as a hash
-  context[:headers] # Returns headers as a hash
-  context[:params][:path_variable] # The defined path variable can be found in :params
-  return JSON.pretty_generate({ hello_message: 'Hello World!' }), 200
-end
-
-m.start!
-```
-
-The example above starts a server and creates a GET endpoint at localhost/hello_world.
 
 If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
 is configurable via the `application.json` file.

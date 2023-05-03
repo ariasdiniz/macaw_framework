@@ -3,7 +3,7 @@
 require_relative "macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "macaw_framework/middlewares/prometheus_middleware"
 require_relative "macaw_framework/data_filters/request_data_filtering"
-require_relative "macaw_framework/middlewares/caching_middleware"
+require_relative "macaw_framework/middlewares/memory_invalidation_middleware"
 require_relative "macaw_framework/core/server"
 require_relative "macaw_framework/version"
 require "prometheus/client"
@@ -31,7 +31,7 @@ module MacawFramework
         @bind = @config["macaw"]["bind"] || "localhost"
         @threads = @config["macaw"]["threads"] || 5
         unless @config["macaw"]["cache"].nil?
-          @cache = CachingMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
+          @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
         end
         @prometheus = Prometheus::Client::Registry.new if @config["macaw"]["prometheus"]
         @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
