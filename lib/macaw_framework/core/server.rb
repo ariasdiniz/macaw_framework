@@ -34,7 +34,8 @@ class Server
     @macaw_log = macaw.macaw_log
     @num_threads = macaw.threads
     @work_queue = Queue.new
-    ignored_headers = set_rate_limiting
+    ignored_headers = set_cache_ignored_h
+    set_rate_limiting
     set_ssl
     @rate_limit ||= nil
     ignored_headers ||= nil
@@ -107,12 +108,18 @@ class Server
   end
 
   def set_rate_limiting
-    if @macaw.config&.dig("macaw", "rate_limiting")
-      ignored_headers = @macaw.config["macaw"]["rate_limiting"]["ignore_headers"] || []
-      @rate_limit = RateLimiterMiddleware.new(
-        @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
-        @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
-      )
+    return unless @macaw.config&.dig("macaw", "rate_limiting")
+
+    @rate_limit = RateLimiterMiddleware.new(
+      @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
+      @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
+    )
+  end
+
+  def set_cache_ignored_h
+    ignored_headers = nil
+    if @macaw.config&.dig("macaw", "cache", "ignored_headers")
+      ignored_headers = @macaw.config["macaw"]["cache"]["ignore_headers"] || []
     end
     ignored_headers
   end

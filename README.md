@@ -26,18 +26,18 @@ in the same directory of the script that will start the application with the fol
     "bind": "localhost",
     "threads": 10,
     "cache": {
-      "cache_invalidation": 3600
+      "cache_invalidation": 3600,
+      "ignore_headers": [
+        "header-to-be-ignored-from-caching-strategy",
+        "another-header-to-be-ignored-from-caching-strategy"
+      ]
     },
     "prometheus": {
       "endpoint": "/metrics"
     },
     "rate_limiting": {
       "window": 10,
-      "max_requests": 3,
-      "ignore_headers": [
-        "header-to-be-ignored-from-caching-strategy",
-        "another-header-to-be-ignored-from-caching-strategy"
-      ]
+      "max_requests": 3
     },
     "ssl": {
       "ssl": {
