@@ -3,7 +3,7 @@
 ##
 # Middleware responsible for storing and
 # invalidating cache.
-class CachingMiddleware
+class MemoryInvalidationMiddleware
   attr_accessor :cache, :mutex
 
   def initialize(inv_time_seconds = 3_600)

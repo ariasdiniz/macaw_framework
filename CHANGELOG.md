@@ -41,3 +41,9 @@
 - Implemented a middleware for rate limiting to prevent DoS attacks
 - Improvement of caching strategy to ignore optional headers
 - First production-ready version
+
+## [1.0.1] - 2023-05-03
+
+- Introducing server-side session management
+- Fixing a bug with cache
+- Improving README

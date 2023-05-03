@@ -2,6 +2,7 @@
 
 require_relative "../middlewares/rate_limiter_middleware"
 require_relative "../data_filters/response_data_filter"
+require_relative "../middlewares/memory_invalidation_middleware"
 require_relative "../errors/too_many_requests_error"
 require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
@@ -24,7 +25,7 @@ class Server
   # @param {Integer} port
   # @param {String} bind
   # @param {Integer} num_threads
-  # @param {CachingMiddleware} cache
+  # @param {MemoryInvalidationMiddleware} cache
   # @param {Prometheus::Client:Registry} prometheus
   # @return {Server}
   def initialize(macaw, endpoints_to_cache = nil, cache = nil, prometheus = nil, prometheus_mw = nil)
@@ -35,8 +36,7 @@ class Server
     @num_threads = macaw.threads
     @work_queue = Queue.new
     ignored_headers = set_cache_ignored_h
-    set_rate_limiting
-    set_ssl
+    set_features
     @rate_limit ||= nil
     ignored_headers ||= nil
     @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [], ignored_headers: ignored_headers }
@@ -87,11 +87,12 @@ class Server
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
     raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
+    declare_client_session(client)
     client_data = get_client_data(body, headers, parameters)
 
     @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
-                                                      method_name, client_data)
+                                                      method_name, client_data, client.peeraddr[3])
     status ||= 200
     message ||= nil
     response_headers ||= nil
@@ -107,6 +108,11 @@ class Server
     client.close
   end
 
+  def declare_client_session(client)
+    @session[client.peeraddr[3]] ||= [{}, Time.now]
+    @session[client.peeraddr[3]] = [{}, Time.now] if @session[client.peeraddr[3]][0].nil?
+  end
+
   def set_rate_limiting
     return unless @macaw.config&.dig("macaw", "rate_limiting")
 
@@ -117,7 +123,7 @@ class Server
   end
 
   def set_cache_ignored_h
-    ignored_headers = nil
+    ignored_headers = []
     if @macaw.config&.dig("macaw", "cache", "ignored_headers")
       ignored_headers = @macaw.config["macaw"]["cache"]["ignore_headers"] || []
     end
@@ -138,10 +144,31 @@ class Server
     raise e
   end
 
-  def call_endpoint(name, client_data)
+  def set_session
+    @session = {}
+    inv = if @macaw.config&.dig("macaw", "session", "invalidation_time")
+            MemoryInvalidationMiddleware.new(@macaw.config["macaw"]["session"]["invalidation_time"])
+          else
+            MemoryInvalidationMiddleware.new
+          end
+    inv.cache = @session
+  end
+
+  def set_features
+    set_rate_limiting
+    set_session
+    set_ssl
+  end
+
+  def call_endpoint(name, client_data, client_ip)
     @macaw.send(
       name.to_sym,
-      { headers: client_data[:headers], body: client_data[:body], params: client_data[:parameters] }
+      {
+        headers: client_data[:headers],
+        body: client_data[:body],
+        params: client_data[:parameters],
+        client: @session[client_ip][0]
+      }
     )
   end
 
