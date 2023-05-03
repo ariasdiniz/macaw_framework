@@ -16,7 +16,7 @@ class TestEndpoint
   attr_accessor :config
 
   def initialize
-    @routes = %w[get.hello get.ok get.ise]
+    @routes = %w[get.hello get.ok get.ise post.set_session get.get_session]
     @port = 9292
     @bind = "localhost"
     @threads = 4
@@ -25,6 +25,18 @@ class TestEndpoint
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
     define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
+    @routes << "get.session"
+    define_singleton_method("post.set_session", lambda { |context|
+                                                  context[:client][:value] = 42
+                                                  ["Session set", 200]
+                                                })
+    define_singleton_method("get.get_session", ->(context) { "Session value: #{context[:client][:value]}" })
+  end
+
+  def update_session(client_session)
+    client_session[0][:counter] ||= 0
+    client_session[0][:counter] += 1
+    ["Counter: #{client_session[0][:counter]}", 200]
   end
 end
 
@@ -191,6 +203,61 @@ class ServerTest < Minitest::Test
 
     assert_equal "200", response.code
     assert_match(/Hello, World!/, response.body)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_session
+    @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 30 } } }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    # First request to set the session value
+    client1 = TCPSocket.new(@bind, @port)
+    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    response1 = client1.read
+    client1.close
+
+    assert_match(/Session set/, response1)
+
+    # Second request to get the session value
+    client2 = TCPSocket.new(@bind, @port)
+    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response2 = client2.read
+    client2.close
+
+    assert_match(/Session value: 42/, response2)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_session_invalidation
+    @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 2 } } }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    client1 = TCPSocket.new(@bind, @port)
+    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    response1 = client1.read
+    client1.close
+
+    assert_match(/Session set/, response1)
+
+    sleep(3.5)
+
+    client2 = TCPSocket.new(@bind, @port)
+    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response2 = client2.read
+    client2.close
+
+    assert_match(/Session value: /, response2)
+    refute_match(/Session value: 42/, response2)
 
     @server.close
     server_thread.join

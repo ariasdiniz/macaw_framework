@@ -8,8 +8,9 @@ Gem::Specification.new do |spec|
   spec.authors = ["Aria Diniz"]
   spec.email = ["aria.diniz.dev@gmail.com"]
 
-  spec.summary = "A web framework still in development."
-  spec.description = "A project started for study purpose that I intend to keep working on."
+  spec.summary = "A lightweight back-end web framework"
+  spec.description = "A lightweight web framework designed for building efficient backend applications. Initially
+created for study purposes, now production-ready and open for contributions."
   spec.homepage = "https://github.com/ariasdiniz/macaw_framework"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.7.0"
