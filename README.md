@@ -61,18 +61,21 @@ end
 ```ruby
 m.get('/login') do |context|
   # Authenticate user
-  context[:session][:user_id] = user_id
+  context[:client][:user_id] = user_id
 end
 
 m.get('/dashboard') do |context|
   # Check if the user is logged in
-  if context[:session][:user_id]
+  if context[:client][:user_id]
     # Show dashboard
   else
     # Redirect to login
   end
 end
 ```
+
+Observation: To activate caching you also have to set it's properties on the application.json file. If you don't, caching strategy will not work. 
+See section below for configurations.
 
 ### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
 
