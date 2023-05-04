@@ -56,6 +56,9 @@ m.get('/cached_data', cache: true) do |context|
 end
 ```
 
+Observation: To activate caching you also have to set it's properties on the application.json file. If you don't, caching strategy will not work.
+See section below for configurations.
+
 ### Session management: Handle user sessions securely with server-side in-memory storage
 
 ```ruby
@@ -73,9 +76,6 @@ m.get('/dashboard') do |context|
   end
 end
 ```
-
-Observation: To activate caching you also have to set it's properties on the application.json file. If you don't, caching strategy will not work. 
-See section below for configurations.
 
 ### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
 
