@@ -5,7 +5,7 @@ require_relative "../errors/endpoint_not_mapped_error"
 ##
 # Module containing methods to filter Strings
 module RequestDataFiltering
-  VARIABLE_PATTERN = %r{:[^/]+}.freeze
+  VARIABLE_PATTERN = %r{:[^/]+}
 
   ##
   # Method responsible for extracting information
@@ -114,6 +114,6 @@ module RequestDataFiltering
   # Method responsible for sanitizing the parameter value
   def self.sanitize_parameter_value(value)
     value.gsub(/[^\w\s]/, "")
-    value.gsub(/[\r\n\s]/, "")
+    value.gsub(/\s/, "")
   end
 end

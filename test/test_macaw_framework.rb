@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
+require "net/http"
 
 class TestMacawFramework < Minitest::Spec
   before do
@@ -38,5 +39,23 @@ class TestMacawFramework < Minitest::Spec
     assert !@macaw.respond_to?("delete.hello_world")
     @macaw.delete("/hello_world") {}
     assert @macaw.respond_to?("delete.hello_world")
+  end
+
+  def test_initialize_with_custom_logger
+    custom_logger = Logger.new($stdout)
+    macaw = MacawFramework::Macaw.new(custom_log: custom_logger)
+    assert_equal custom_logger, macaw.macaw_log
+  end
+
+  def test_endpoint_cache_configuration
+    macaw = MacawFramework::Macaw.new
+    macaw.get("/cache_test", cache: true) {}
+    assert_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.cache_test"
+  end
+
+  def test_endpoint_without_cache_configuration
+    macaw = MacawFramework::Macaw.new
+    macaw.get("/no_cache_test") {}
+    refute_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.no_cache_test"
   end
 end
