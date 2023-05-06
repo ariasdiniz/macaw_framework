@@ -5,7 +5,7 @@ require_relative "../errors/endpoint_not_mapped_error"
 ##
 # Module containing methods to filter Strings
 module RequestDataFiltering
-  VARIABLE_PATTERN = %r{:[^/]+}.freeze
+  VARIABLE_PATTERN = %r{:[^/]+}
 
   ##
   # Method responsible for extracting information
