@@ -12,7 +12,7 @@ module CacheAspect
       return cache[:cache].cache[cache_filtered_name][0] unless cache[:cache].cache[cache_filtered_name].nil?
 
       response = super(*args)
-      cache[:cache].cache[cache_filtered_name] = [response, Time.now]
+      cache[:cache].cache[cache_filtered_name] = [response, Time.now] if should_cache_response?(response[1])
       response
     end
   end
@@ -22,5 +22,9 @@ module CacheAspect
   def cache_name_filter(client_data, ignored_headers)
     filtered_headers = client_data[:headers].filter { |key, _value| !ignored_headers&.include?(key) }
     [{ body: client_data[:body], params: client_data[:params], headers: filtered_headers }].to_s.to_sym
+  end
+
+  def should_cache_response?(status)
+    (200..299).include?(status.to_i)
   end
 end
