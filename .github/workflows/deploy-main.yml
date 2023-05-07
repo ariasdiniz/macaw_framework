@@ -1,0 +1,43 @@
+name: Build and Publish Gem on Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  build-and-publish-gem:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set Gem Version
+        run: |
+          VERSION=$(grep -E "VERSION" lib/macaw_framework/version.rb | cut -d '=' -f 2 | tr -d " '")
+          echo "module MacawFramework" > lib/macaw_framework/version.rb
+          echo "  VERSION = '$VERSION'" >> lib/macaw_framework/version.rb
+          echo "end" >> lib/macaw_framework/version.rb
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+      - name: Update bundler
+        run: gem update bundler
+      - name: Install Dependencies
+        run: bundle install
+      - name: Build Gem
+        run: gem build macaw_framework.gemspec
+        env:
+          GEM_VERSION: |
+            cat lib/macaw_framework/version.rb | grep VERSION | cut -d '=' -f 2 | tr -d " '"
+
+      - name: Publish Gem to RubyGems
+        run: gem push macaw_framework-*.gem --key ${{ secrets.RUBYGEMS_API_KEY }} --host https://rubygems.org/
+        env:
+          GEM_VERSION: |
+            cat lib/macaw_framework/version.rb | grep VERSION | cut -d '=' -f 2 | tr -d " '"
+        if: ${{ github.event.pull_request.merged == true && success() }}

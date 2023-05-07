@@ -47,3 +47,9 @@
 - Introducing server-side session management
 - Fixing a bug with cache
 - Improving README
+
+## [1.0.2] - 2023-05-06
+
+- Fixing a bug with cache where ignored_headers where not being properly loaded
+- Fixed a bug with cache where URL parameters were not being considered in the strategy
+- Updating SECURITY.md with more information
