@@ -111,12 +111,6 @@ end
     "port": 8080,
     "bind": "localhost",
     "threads": 10,
-    "log": {
-      "max_length": 1024,
-      "sensitive_fields": [
-        "password"
-      ]
-    },
     "cache": {
       "cache_invalidation": 3600,
       "ignore_headers": [
