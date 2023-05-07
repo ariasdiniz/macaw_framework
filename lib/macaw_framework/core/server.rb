@@ -123,11 +123,9 @@ class Server
   end
 
   def set_cache_ignored_h
-    ignored_headers = []
-    if @macaw.config&.dig("macaw", "cache", "ignored_headers")
-      ignored_headers = @macaw.config["macaw"]["cache"]["ignore_headers"] || []
-    end
-    ignored_headers
+    return unless @macaw.config&.dig("macaw", "cache", "ignore_headers")
+
+    @macaw.config["macaw"]["cache"]["ignore_headers"] || []
   end
 
   def set_ssl
@@ -166,13 +164,13 @@ class Server
       {
         headers: client_data[:headers],
         body: client_data[:body],
-        params: client_data[:parameters],
+        params: client_data[:params],
         client: @session[client_ip][0]
       }
     )
   end
 
   def get_client_data(body, headers, parameters)
-    { body: body, headers: headers, parameters: parameters }
+    { body: body, headers: headers, params: parameters }
   end
 end
