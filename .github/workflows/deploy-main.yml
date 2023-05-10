@@ -30,8 +30,9 @@ jobs:
             cat lib/macaw_framework/version.rb | grep VERSION | cut -d '=' -f 2 | tr -d " '"
 
       - name: Publish Gem to RubyGems
-        run: gem push macaw_framework-*.gem --key ${{ secrets.RUBYGEMS_API_KEY }} --host https://rubygems.org/
+        run: gem push macaw_framework-*.gem --host https://rubygems.org/
         env:
           GEM_VERSION: |
             cat lib/macaw_framework/version.rb | grep VERSION | cut -d '=' -f 2 | tr -d " '"
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         if: ${{ github.event.pull_request.merged == true && success() }}
