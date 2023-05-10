@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
+require_relative "../middlewares/memory_invalidation_middleware"
 require_relative "../middlewares/rate_limiter_middleware"
 require_relative "../data_filters/response_data_filter"
-require_relative "../middlewares/memory_invalidation_middleware"
 require_relative "../errors/too_many_requests_error"
+require_relative "../utils/supported_ssl_versions"
 require_relative "../aspects/prometheus_aspect"
 require_relative "../aspects/logging_aspect"
 require_relative "../aspects/cache_aspect"
@@ -17,6 +18,8 @@ class Server
   prepend LoggingAspect
   prepend PrometheusAspect
   # rubocop:disable Metrics/ParameterLists
+
+  attr_reader :context
 
   ##
   # Create a new instance of Server.
@@ -129,10 +132,15 @@ class Server
   end
 
   def set_ssl
-    if @macaw.config&.dig("macaw", "ssl")
+    ssl_config = @macaw.config["macaw"]["ssl"] if @macaw.config&.dig("macaw", "ssl")
+    ssl_config ||= nil
+    unless ssl_config.nil?
+      version_config = { min: ssl_config["min"], max: ssl_config["max"] }
       @context = OpenSSL::SSL::SSLContext.new
-      @context.cert = OpenSSL::X509::Certificate.new(File.read(@macaw.config["macaw"]["ssl"]["cert_file_name"]))
-      @context.key = OpenSSL::PKey::RSA.new(File.read(@macaw.config["macaw"]["ssl"]["key_file_name"]))
+      @context.min_version = SupportedSSLVersions::VERSIONS[version_config[:min]] unless version_config[:min].nil?
+      @context.max_version = SupportedSSLVersions::VERSIONS[version_config[:max]] unless version_config[:max].nil?
+      @context.cert = OpenSSL::X509::Certificate.new(File.read(ssl_config["cert_file_name"]))
+      @context.key = OpenSSL::PKey::RSA.new(File.read(ssl_config["key_file_name"]))
     end
     @context ||= nil
   rescue IOError => e
