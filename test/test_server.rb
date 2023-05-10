@@ -262,4 +262,66 @@ class ServerTest < Minitest::Test
     @server.close
     server_thread.join
   end
+
+  def test_ssl_config_no_ssl
+    @macaw.config = nil
+    @server = Server.new(@macaw)
+    assert_nil @server.context
+    @server = nil
+  end
+
+  def test_ssl_config_with_ssl_no_min_max
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "cert_file_name" => "./test/data/test_cert.pem",
+          "key_file_name" => "./test/data/test_key.pem"
+        }
+      }
+    }
+    @server = Server.new(@macaw)
+    assert_kind_of OpenSSL::SSL::SSLContext, @server.context
+    @server = nil
+  end
+
+  def test_ssl_config_with_ssl_values
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "min" => "SSL3",
+          "max" => "TLS1.1",
+          "cert_file_name" => "./test/data/test_cert.pem",
+          "key_file_name" => "./test/data/test_key.pem"
+        }
+      }
+    }
+
+    context_mock = Minitest::Mock.new
+    context_mock.expect(:min_version=, nil, [OpenSSL::SSL::SSL3_VERSION])
+    context_mock.expect(:max_version=, nil, [OpenSSL::SSL::TLS1_1_VERSION])
+    context_mock.expect(:cert=, nil, [Object])
+    context_mock.expect(:key=, nil, [Object])
+
+    OpenSSL::SSL::SSLContext.stub :new, context_mock do
+      @server = Server.new(@macaw)
+    end
+
+    assert_mock context_mock
+    @server = nil
+  end
+
+  def test_ssl_config_with_missing_files
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "cert_file_name" => "./test/data/non_existent_cert.pem",
+          "key_file_name" => "./test/data/non_existent_key.pem"
+        }
+      }
+    }
+    assert_raises Errno::ENOENT do
+      Server.new(@macaw)
+    end
+    @server = nil
+  end
 end
