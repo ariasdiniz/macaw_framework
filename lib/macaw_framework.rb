@@ -37,7 +37,7 @@ module MacawFramework
         @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
         @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
       rescue StandardError => e
-        @macaw_log.error(e.message)
+        @macaw_log.warn(e.message)
       end
       @port ||= 8080
       @bind ||= "localhost"
