@@ -15,12 +15,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Set Gem Version
-        run: |
-          VERSION=$(grep -E "VERSION" lib/macaw_framework/version.rb | cut -d '=' -f 2 | tr -d " '")
-          echo "module MacawFramework" > lib/macaw_framework/version.rb
-          echo "  VERSION = '$VERSION'" >> lib/macaw_framework/version.rb
-          echo "end" >> lib/macaw_framework/version.rb
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:

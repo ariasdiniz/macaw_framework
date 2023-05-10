@@ -13,6 +13,8 @@ gem "rubocop", "~> 1.21"
 
 gem "prometheus-client", "~> 4.1"
 
+gem "openssl"
+
 group :test do
   gem "simplecov", "~> 0.21.2"
   gem "simplecov-json"

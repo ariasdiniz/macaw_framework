@@ -85,6 +85,12 @@ end
     "port": 8080,
     "bind": "localhost",
     "threads": 10,
+    "log": {
+      "max_length": 1024,
+      "sensitive_fields": [
+        "password"
+      ]
+    },
     "cache": {
       "cache_invalidation": 3600,
       "ignore_headers": [
@@ -100,6 +106,8 @@ end
       "max_requests": 3
     },
     "ssl": {
+      "min": "SSL3",
+      "max": "TLS1.3",
       "cert_file_name": "path/to/cert/file/file.crt",
       "key_file_name": "path/to/cert/key/file.key"
     }
@@ -134,6 +142,8 @@ exists inside `application.json`.
 
 If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
 will be wrapped with HTTPS security using the provided certificate.
+
+The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`
 
 If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
 is configurable via the `application.json` file.
