@@ -114,6 +114,6 @@ module RequestDataFiltering
   # Method responsible for sanitizing the parameter value
   def self.sanitize_parameter_value(value)
     value.gsub(/[^\w\s]/, "")
-    value.gsub(/[\r\n\s]/, "")
+    value.gsub(/\s/, "")
   end
 end
