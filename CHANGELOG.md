@@ -53,3 +53,9 @@
 - Fixing a bug with cache where ignored_headers where not being properly loaded
 - Fixed a bug with cache where URL parameters were not being considered in the strategy
 - Updating SECURITY.md with more information
+
+## [1.0.3] - 2023-05-10
+
+- Fixing issue of error responses being cached
+- Implementing support for min and max SSL version
+- Creating log sanitization to prevent log forging
