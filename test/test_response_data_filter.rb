@@ -9,7 +9,7 @@ class TestResponseDataFilter < Minitest::Test
     headers = { "Content-Type" => "text/html" }
     body = "Hello, World!"
 
-    expected_response = "HTTP/1.1 200 OK \r\nContent-Type: text/html\r\n\r\n\r\nHello, World!"
+    expected_response = "HTTP/1.1 200 OK \r\nContent-Type: text/html\r\n\r\nHello, World!"
     actual_response = ResponseDataFilter.mount_response(status, headers, body)
 
     assert_equal expected_response, actual_response
@@ -46,7 +46,7 @@ class TestResponseDataFilter < Minitest::Test
 
   def test_mount_response_headers_with_headers_present
     headers = { "Content-Type" => "text/html", "Content-Length" => 42 }
-    expected_headers = "Content-Type: text/html\r\nContent-Length: 42\r\n\r\n\r\n"
+    expected_headers = "Content-Type: text/html\r\nContent-Length: 42\r\n\r\n"
     actual_headers = ResponseDataFilter.mount_response_headers(headers)
 
     assert_equal expected_headers, actual_headers
@@ -56,6 +56,6 @@ class TestResponseDataFilter < Minitest::Test
     headers = nil
     actual_headers = ResponseDataFilter.mount_response_headers(headers)
 
-    assert_nil actual_headers
+    assert actual_headers == ""
   end
 end

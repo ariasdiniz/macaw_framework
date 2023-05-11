@@ -19,13 +19,13 @@ module ResponseDataFilter
   end
 
   def self.mount_response_headers(headers)
-    return nil if headers.nil?
+    return "" if headers.nil?
 
     response = ""
     headers.each do |key, value|
       response += "#{key}: #{value}\r\n"
     end
-    response += "\r\n\r\n"
+    response += "\r\n"
     response
   end
 end

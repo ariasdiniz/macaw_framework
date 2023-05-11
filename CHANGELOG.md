@@ -59,3 +59,7 @@
 - Fixing issue of error responses being cached
 - Implementing support for min and max SSL version
 - Creating log sanitization to prevent log forging
+
+## [1.0.4] - 2023-05-11
+
+- Fixing issue with response body returning always a blank line at the beginning
