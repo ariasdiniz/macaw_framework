@@ -324,4 +324,22 @@ class ServerTest < Minitest::Test
     end
     @server = nil
   end
+
+  def test_data_filtering
+    @macaw.routes << "post.test_filter"
+    @macaw.define_singleton_method("post.test_filter", ->(context) { context[:body] })
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "POST /test_filter HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\nhello"
+    response = client.read
+    client.close
+
+    assert_match(/hello/, response)
+
+    @server.close
+    server_thread.join
+  end
 end
