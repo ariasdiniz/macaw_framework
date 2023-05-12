@@ -63,3 +63,7 @@
 ## [1.0.4] - 2023-05-11
 
 - Fixing issue with response body returning always a blank line at the beginning
+
+## [1.0.5] - 2023-05-12
+
+- Fixing critical bug where threads were being killed and not respawning after abrupt client connection shutdown

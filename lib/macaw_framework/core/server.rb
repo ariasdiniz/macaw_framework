@@ -55,14 +55,15 @@ class Server
   def run
     @server = TCPServer.new(@bind, @port)
     @server = OpenSSL::SSL::SSLServer.new(@server, @context) if @context
+    @workers_mutex = Mutex.new
     @num_threads.times do
-      @workers << Thread.new do
-        loop do
-          client = @work_queue.pop
-          break if client == :shutdown
+      spawn_worker
+    end
 
-          handle_client(client)
-        end
+    Thread.new do
+      loop do
+        sleep 10
+        maintain_worker_pool
       end
     end
 
@@ -100,6 +101,8 @@ class Server
     message ||= nil
     response_headers ||= nil
     client.puts ResponseDataFilter.mount_response(status, response_headers, message)
+  rescue IOError, Errno::EPIPE => e
+    @macaw_log.error("Error writing to client: #{e.message}")
   rescue TooManyRequestsError
     client.print "HTTP/1.1 429 Too Many Requests\r\n\r\n"
   rescue EndpointNotMappedError
@@ -108,7 +111,11 @@ class Server
     client.print "HTTP/1.1 500 Internal Server Error\r\n\r\n"
     @macaw_log.info("Error: #{e}")
   ensure
-    client.close
+    begin
+      client.close
+    rescue IOError => e
+      @macaw_log.error("Error closing client: #{e.message}")
+    end
   end
 
   def declare_client_session(client)
@@ -180,5 +187,29 @@ class Server
 
   def get_client_data(body, headers, parameters)
     { body: body, headers: headers, params: parameters }
+  end
+
+  def spawn_worker
+    @workers_mutex.synchronize do
+      @workers << Thread.new do
+        loop do
+          client = @work_queue.pop
+          break if client == :shutdown
+
+          handle_client(client)
+        end
+      end
+    end
+  end
+
+  def maintain_worker_pool
+    @workers_mutex.synchronize do
+      @workers.each_with_index do |worker, index|
+        unless worker.alive?
+          @macaw_log.error("Worker thread #{index} died, respawning...")
+          @workers[index] = spawn_worker
+        end
+      end
+    end
   end
 end
