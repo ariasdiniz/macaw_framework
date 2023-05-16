@@ -67,3 +67,7 @@
 ## [1.0.5] - 2023-05-12
 
 - Fixing critical bug where threads were being killed and not respawning after abrupt client connection shutdown
+
+## [1.1.0] - 2023-xx-xx
+
+- Adding support for other SSL/TSL keys other than RSA
