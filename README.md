@@ -108,6 +108,7 @@ end
     "ssl": {
       "min": "SSL3",
       "max": "TLS1.3",
+      "key_type": "EC",
       "cert_file_name": "path/to/cert/file/file.crt",
       "key_file_name": "path/to/cert/key/file.key"
     }
@@ -143,7 +144,8 @@ exists inside `application.json`.
 If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
 will be wrapped with HTTPS security using the provided certificate.
 
-The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`
+The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`,
+and the supported values for `key_type` are `RSA` and `EC`.
 
 If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
 is configurable via the `application.json` file.

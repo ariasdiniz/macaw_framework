@@ -342,4 +342,52 @@ class ServerTest < Minitest::Test
     @server.close
     server_thread.join
   end
+
+  def test_ssl_config_with_ecdsa_key
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "key_type" => "EC",
+          "cert_file_name" => "./test/data/ec_cert.crt",
+          "key_file_name" => "./test/data/ec_key.key"
+        }
+      }
+    }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    http = Net::HTTP.new(@bind, @port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    request = Net::HTTP::Get.new("/hello")
+    response = http.request(request)
+
+    assert_equal "200", response.code
+    assert_match(/Hello, World!/, response.body)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_invalid_ssl_key_type
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "key_type" => "INVALID",
+          "cert_file_name" => "./test/data/test_cert.pem",
+          "key_file_name" => "./test/data/test_key.pem"
+        }
+      }
+    }
+
+    Thread.new { @server.run }
+    sleep(0.1)
+
+    assert_raises ArgumentError do
+      Server.new(@macaw)
+    end
+  end
 end
