@@ -147,12 +147,19 @@ class Server
       @context.min_version = SupportedSSLVersions::VERSIONS[version_config[:min]] unless version_config[:min].nil?
       @context.max_version = SupportedSSLVersions::VERSIONS[version_config[:max]] unless version_config[:max].nil?
       @context.cert = OpenSSL::X509::Certificate.new(File.read(ssl_config["cert_file_name"]))
-      @context.key = OpenSSL::PKey::RSA.new(File.read(ssl_config["key_file_name"]))
+
+      if ssl_config["key_type"] == "RSA" || ssl_config["key_type"].nil?
+        @context.key = OpenSSL::PKey::RSA.new(File.read(ssl_config["key_file_name"]))
+      elsif ssl_config["key_type"] == "EC"
+        @context.key = OpenSSL::PKey::EC.new(File.read(ssl_config["key_file_name"]))
+      else
+        raise ArgumentError, "Unsupported SSL/TLS key type: #{ssl_config["key_type"]}"
+      end
     end
     @context ||= nil
   rescue IOError => e
     @macaw_log.error("It was not possible to read files #{@macaw.config["macaw"]["ssl"]["cert_file_name"]} and
-#{@macaw.config["macaw"]["ssl"]["key_file_name"]}. Please assure the files exists and their names are correct.")
+#{@macaw.config["macaw"]["ssl"]["key_file_name"]}. Please assure the files exist and their names are correct.")
     @macaw_log.error(e.backtrace)
     raise e
   end
