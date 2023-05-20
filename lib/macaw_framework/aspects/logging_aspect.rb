@@ -9,6 +9,8 @@ require_relative "../data_filters/log_data_filter"
 # in the framework.
 module LoggingAspect
   def call_endpoint(logger, *args)
+    return super(*args) if logger.nil?
+
     endpoint_name = args[1].split(".")[1..].join("/")
     logger.info(LogDataFilter.sanitize_for_logging(
                   "Request received for #{endpoint_name} with arguments: #{args[2..]}"

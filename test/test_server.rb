@@ -20,7 +20,7 @@ class TestEndpoint
     @port = 9292
     @bind = "localhost"
     @threads = 4
-    @macaw_log = Logger.new($stdout)
+    @macaw_log = nil
     @config = nil
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
@@ -338,6 +338,95 @@ class ServerTest < Minitest::Test
     client.close
 
     assert_match(/hello/, response)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_ssl_config_with_ecdsa_key
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "key_type" => "EC",
+          "cert_file_name" => "./test/data/ec_cert.crt",
+          "key_file_name" => "./test/data/ec_key.key"
+        }
+      }
+    }
+    @server = Server.new(@macaw)
+
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    http = Net::HTTP.new(@bind, @port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    request = Net::HTTP::Get.new("/hello")
+    response = http.request(request)
+
+    assert_equal "200", response.code
+    assert_match(/Hello, World!/, response.body)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_invalid_ssl_key_type
+    @macaw.config = {
+      "macaw" => {
+        "ssl" => {
+          "key_type" => "INVALID",
+          "cert_file_name" => "./test/data/test_cert.pem",
+          "key_file_name" => "./test/data/test_key.pem"
+        }
+      }
+    }
+
+    Thread.new { @server.run }
+    sleep(0.1)
+
+    assert_raises ArgumentError do
+      Server.new(@macaw)
+    end
+  end
+
+  def test_multiple_requests
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    threads = []
+    10.times do
+      threads << Thread.new do
+        client = TCPSocket.new(@bind, @port)
+        client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+        response = client.read
+        client.close
+        assert_match(/Hello, World!/, response)
+      end
+    end
+
+    threads.each(&:join)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_special_character_request_path
+    @macaw.routes << "get.hello%24world"
+    @macaw.define_singleton_method("get.hello%24world", ->(_context) { "Hello, World!" })
+
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "GET /hello%24world HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match(/Hello, World!/, response)
 
     @server.close
     server_thread.join

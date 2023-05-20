@@ -33,6 +33,14 @@ class LoggingAspectTest < Minitest::Test
     assert_equal "some response", result
   end
 
+  def test_null_logger_behavior
+    args = %w[arg1 arg2]
+    assert_silent do
+      result = call_endpoint(nil, :my_endpoint, *args)
+      assert_equal "some response", result
+    end
+  end
+
   def call_endpoint(_logger, *_args)
     "some response"
   end
