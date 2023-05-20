@@ -4,7 +4,7 @@ class Server
   @context: OpenSSL::SSL::SSLContext
   @endpoints_to_cache: Array[String]
   @macaw: MacawFramework::Macaw
-  @macaw_log: Logger
+  @macaw_log: Logger?
   @num_threads: Integer
   @port: Integer
 

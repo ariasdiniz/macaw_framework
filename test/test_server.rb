@@ -20,7 +20,7 @@ class TestEndpoint
     @port = 9292
     @bind = "localhost"
     @threads = 4
-    @macaw_log = Logger.new($stdout)
+    @macaw_log = nil
     @config = nil
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
