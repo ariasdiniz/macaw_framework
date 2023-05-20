@@ -79,9 +79,7 @@ class Server
   ##
   # Method Responsible for closing the TCP server.
   def close
-    @server.close
-    @num_threads.times { @work_queue << :shutdown }
-    @workers.each(&:join)
+    shutdown
   end
 
   private
@@ -175,6 +173,7 @@ class Server
   end
 
   def set_features
+    @is_shutting_down = false
     set_rate_limiting
     set_session
     set_ssl
@@ -213,10 +212,27 @@ class Server
     @workers_mutex.synchronize do
       @workers.each_with_index do |worker, index|
         unless worker.alive?
-          @macaw_log&.error("Worker thread #{index} died, respawning...")
-          @workers[index] = spawn_worker
+          if @is_shutting_down
+            @macaw_log&.info("Worker thread #{index} finished, not respawning due to server shutdown.")
+          else
+            @macaw_log&.error("Worker thread #{index} died, respawning...")
+            @workers[index] = spawn_worker
+          end
         end
       end
     end
+  end
+
+  def shutdown
+    @is_shutting_down = true
+    loop do
+      break if @work_queue.empty?
+
+      sleep 0.1
+    end
+
+    @num_threads.times { @work_queue << :shutdown }
+    @workers.each(&:join)
+    @server.close
   end
 end

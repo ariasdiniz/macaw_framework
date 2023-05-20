@@ -390,4 +390,45 @@ class ServerTest < Minitest::Test
       Server.new(@macaw)
     end
   end
+
+  def test_multiple_requests
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    threads = []
+    10.times do
+      threads << Thread.new do
+        client = TCPSocket.new(@bind, @port)
+        client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+        response = client.read
+        client.close
+        assert_match(/Hello, World!/, response)
+      end
+    end
+
+    threads.each(&:join)
+
+    @server.close
+    server_thread.join
+  end
+
+  def test_special_character_request_path
+    @macaw.routes << "get.hello%24world"
+    @macaw.define_singleton_method("get.hello%24world", ->(_context) { "Hello, World!" })
+
+    server_thread = Thread.new { @server.run }
+
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "GET /hello%24world HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match(/Hello, World!/, response)
+
+    @server.close
+    server_thread.join
+  end
 end
