@@ -22,10 +22,10 @@ module MacawFramework
 
     ##
     # @param {Logger} custom_log
-    def initialize(custom_log: nil, server: Server)
+    def initialize(custom_log: Logger.new($stdout), server: Server)
       begin
         @routes = []
-        @macaw_log ||= custom_log.nil? ? Logger.new($stdout) : custom_log
+        @macaw_log ||= custom_log
         @config = JSON.parse(File.read("application.json"))
         @port = @config["macaw"]["port"] || 8080
         @bind = @config["macaw"]["bind"] || "localhost"
@@ -37,7 +37,7 @@ module MacawFramework
         @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
         @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
       rescue StandardError => e
-        @macaw_log.warn(e.message)
+        @macaw_log&.warn(e.message)
       end
       @port ||= 8080
       @bind ||= "localhost"
@@ -103,15 +103,28 @@ module MacawFramework
     ##
     # Starts the web server
     def start!
-      @macaw_log.info("---------------------------------")
-      @macaw_log.info("Starting server at port #{@port}")
-      @macaw_log.info("Number of threads: #{@threads}")
-      @macaw_log.info("---------------------------------")
+      if @macaw_log.nil?
+        puts("---------------------------------")
+        puts("Starting server at port #{@port}")
+        puts("Number of threads: #{@threads}")
+        puts("---------------------------------")
+      else
+        @macaw_log.info("---------------------------------")
+        @macaw_log.info("Starting server at port #{@port}")
+        @macaw_log.info("Number of threads: #{@threads}")
+        @macaw_log.info("---------------------------------")
+      end
       server_loop(@server)
     rescue Interrupt
-      @macaw_log.info("Stopping server")
-      @server.close
-      @macaw_log.info("Macaw stop flying for some seeds...")
+      if @macaw_log.nil?
+        puts("Stopping server")
+        @server.close
+        puts("Macaw stop flying for some seeds...")
+      else
+        @macaw_log.info("Stopping server")
+        @server.close
+        @macaw_log.info("Macaw stop flying for some seeds...")
+      end
     end
 
     private
@@ -123,7 +136,7 @@ module MacawFramework
     def map_new_endpoint(prefix, cache, path, &block)
       @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" if cache
       path_clean = RequestDataFiltering.extract_path(path)
-      @macaw_log.info("Defining #{prefix.upcase} endpoint at /#{path}")
+      @macaw_log&.info("Defining #{prefix.upcase} endpoint at /#{path}")
       define_singleton_method("#{prefix}.#{path_clean}", block || lambda {
         |context = { headers: {}, body: "", params: {} }|
                                                          })

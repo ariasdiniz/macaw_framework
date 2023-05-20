@@ -124,6 +124,12 @@ curl http://localhost:8080/metrics
 
 ### Tips
 
+The automatic logging and log aspect are now optional. To disable them, simply start Macaw with `custom_log` set to nil.
+
+```ruby
+MacawFramework::Macaw.new(custom_log: nil)
+```
+
 Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
 should exist in the app main directory and it need the `cache_invalidation` config set. It is possible to
 provide a list of strings in the property `ignore_headers`. All the client headers with the same name of any

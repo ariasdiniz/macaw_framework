@@ -5,7 +5,7 @@ require "net/http"
 
 class TestMacawFramework < Minitest::Spec
   before do
-    @macaw = MacawFramework::Macaw.new
+    @macaw = MacawFramework::Macaw.new(custom_log: nil)
   end
   def test_that_it_has_a_version_number
     refute_nil ::MacawFramework::VERSION
@@ -48,13 +48,13 @@ class TestMacawFramework < Minitest::Spec
   end
 
   def test_endpoint_cache_configuration
-    macaw = MacawFramework::Macaw.new
+    macaw = MacawFramework::Macaw.new(custom_log: nil)
     macaw.get("/cache_test", cache: true) {}
     assert_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.cache_test"
   end
 
   def test_endpoint_without_cache_configuration
-    macaw = MacawFramework::Macaw.new
+    macaw = MacawFramework::Macaw.new(custom_log: nil)
     macaw.get("/no_cache_test") {}
     refute_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.no_cache_test"
   end

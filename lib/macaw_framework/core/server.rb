@@ -70,7 +70,7 @@ class Server
     loop do
       @work_queue << @server.accept
     rescue OpenSSL::SSL::SSLError => e
-      @macaw_log.error("SSL error: #{e.message}")
+      @macaw_log&.error("SSL error: #{e.message}")
     rescue IOError, Errno::EBADF
       break
     end
@@ -94,7 +94,7 @@ class Server
     declare_client_session(client)
     client_data = get_client_data(body, headers, parameters)
 
-    @macaw_log.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
+    @macaw_log&.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
                                                       method_name, client_data, client.peeraddr[3])
     status ||= 200
@@ -102,19 +102,19 @@ class Server
     response_headers ||= nil
     client.puts ResponseDataFilter.mount_response(status, response_headers, message)
   rescue IOError, Errno::EPIPE => e
-    @macaw_log.error("Error writing to client: #{e.message}")
+    @macaw_log&.error("Error writing to client: #{e.message}")
   rescue TooManyRequestsError
     client.print "HTTP/1.1 429 Too Many Requests\r\n\r\n"
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
   rescue StandardError => e
     client.print "HTTP/1.1 500 Internal Server Error\r\n\r\n"
-    @macaw_log.info("Error: #{e}")
+    @macaw_log&.info("Error: #{e}")
   ensure
     begin
       client.close
     rescue IOError => e
-      @macaw_log.error("Error closing client: #{e.message}")
+      @macaw_log&.error("Error closing client: #{e.message}")
     end
   end
 
@@ -158,9 +158,9 @@ class Server
     end
     @context ||= nil
   rescue IOError => e
-    @macaw_log.error("It was not possible to read files #{@macaw.config["macaw"]["ssl"]["cert_file_name"]} and
+    @macaw_log&.error("It was not possible to read files #{@macaw.config["macaw"]["ssl"]["cert_file_name"]} and
 #{@macaw.config["macaw"]["ssl"]["key_file_name"]}. Please assure the files exist and their names are correct.")
-    @macaw_log.error(e.backtrace)
+    @macaw_log&.error(e.backtrace)
     raise e
   end
 
@@ -213,7 +213,7 @@ class Server
     @workers_mutex.synchronize do
       @workers.each_with_index do |worker, index|
         unless worker.alive?
-          @macaw_log.error("Worker thread #{index} died, respawning...")
+          @macaw_log&.error("Worker thread #{index} died, respawning...")
           @workers[index] = spawn_worker
         end
       end
