@@ -71,5 +71,6 @@
 ## [1.1.0] - 2023-xx-xx
 
 - Adding support for other SSL/TSL keys other than RSA
+- New mechanism to handle server shutdown properly
 - Improving log readability
 - Automatic logging is now optional
