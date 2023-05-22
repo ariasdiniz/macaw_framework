@@ -14,6 +14,7 @@ module MacawFramework
 
     attr_reader bind: String
     attr_reader config: Hash[String, untyped]
+    attr_reader jobs: Array[String]
     attr_reader macaw_log: Logger?
     attr_reader port: Integer
     attr_reader routes: Array[String]

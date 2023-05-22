@@ -1,0 +1,6 @@
+class CronRunner
+  @logger: Logger?
+  @macaw: MacawFramework::Macaw
+
+  def start_cron_job_thread: -> Thread
+end

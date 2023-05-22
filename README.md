@@ -4,6 +4,21 @@ MacawFramework is a lightweight, easy-to-use web framework for Ruby designed to 
 medium-sized web applications. With support for various HTTP methods, caching, and session management, MacawFramework 
 provides developers with the essential tools to quickly build and deploy their applications.
 
+- [MacawFramework](#macawframework)
+    * [Features](#features)
+    * [Installation](#installation)
+    * [Usage](#usage)
+        + [Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods](#basic-routing-define-routes-with-support-for-get-post-put-patch-and-delete-http-methods)
+        + [Caching: Improve performance by caching responses and configuring cache invalidation](#caching-improve-performance-by-caching-responses-and-configuring-cache-invalidation)
+        + [Session management: Handle user sessions securely with server-side in-memory storage](#session-management-handle-user-sessions-securely-with-server-side-in-memory-storage)
+        + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-rate-limiting-ssl-support-and-prometheus-integration)
+        + [Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support](#monitoring-easily-monitor-your-application-performance-and-metrics-with-built-in-prometheus-support)
+        + [Cron Jobs](#cron-jobs)
+        + [Tips](#tips)
+    * [Contributing](#contributing)
+    * [License](#license)
+    * [Code of Conduct](#code-of-conduct)
+
 ## Features
 
 - Simple routing with support for GET, POST, PUT, PATCH, and DELETE HTTP methods
@@ -122,6 +137,24 @@ end
 curl http://localhost:8080/metrics
 ```
 
+### Cron Jobs
+
+Macaw Framework supports the declaration of cron jobs right in your application code. This feature allows developers to 
+define tasks that run at set intervals, starting after an optional delay. Each job runs in a separate thread, meaning 
+your cron jobs can execute in parallel without blocking the rest of your application.
+
+Here's an example of how to declare a cron job:
+
+```ruby
+m.setup_job(interval: 5, start_delay: 5, job_name: "cron job 1") do
+  puts "i'm a cron job that runs every 5 secs!"
+end
+```
+
+Values for interval and start_delay are in seconds.
+
+Caution: Defining a lot of jobs with low interval can severely degrade performance.
+
 ### Tips
 
 The automatic logging and log aspect are now optional. To disable them, simply start Macaw with `custom_log` set to nil.
@@ -159,6 +192,9 @@ is configurable via the `application.json` file.
 The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status 
 code to be returned to the client and the response headers as a Hash or nil. If an endpoint doesn't return a value or 
 returns nil for body, status code and headers, a default 200 OK status will be sent as the response.
+
+For cron jobs without a start_delay, a value of 0 will be used. For a job without name, a unique name will be generated 
+for it.
 
 ## Contributing
 
