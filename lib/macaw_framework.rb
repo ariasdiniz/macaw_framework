@@ -4,9 +4,11 @@ require_relative "macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "macaw_framework/middlewares/prometheus_middleware"
 require_relative "macaw_framework/data_filters/request_data_filtering"
 require_relative "macaw_framework/middlewares/memory_invalidation_middleware"
+require_relative "macaw_framework/core/cron_runner"
 require_relative "macaw_framework/core/server"
 require_relative "macaw_framework/version"
 require "prometheus/client"
+require "securerandom"
 require "logger"
 require "socket"
 require "json"
@@ -18,7 +20,7 @@ module MacawFramework
   class Macaw
     ##
     # Array containing the routes defined in the application
-    attr_reader :routes, :port, :bind, :threads, :macaw_log, :config
+    attr_reader :routes, :port, :bind, :threads, :macaw_log, :config, :jobs
 
     ##
     # @param {Logger} custom_log
@@ -98,6 +100,19 @@ module MacawFramework
     # @return {String, Integer}
     def delete(path, cache: false, &block)
       map_new_endpoint("delete", cache, path, &block)
+    end
+
+    ##
+    # Spawn and start a thread running the defined cron job.
+    # @param {Integer} interval
+    # @param {Integer?} start_delay
+    # @param {String} job_name
+    # @param {Proc} block
+    def setup_job(interval: 60, start_delay: nil, job_name: "job_#{SecureRandom.uuid}", &block)
+      @cron_runner ||= CronRunner.new(self)
+      @jobs ||= []
+      @cron_runner.start_cron_job_thread(interval, start_delay, job_name, &block)
+      @jobs << job_name
     end
 
     ##
