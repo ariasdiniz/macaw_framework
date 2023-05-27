@@ -63,7 +63,7 @@ class ServerTest < Minitest::Test
     @port = 9292
     @bind = "localhost"
     @num_threads = 4
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
   end
 
   def teardown
@@ -137,7 +137,7 @@ class ServerTest < Minitest::Test
 
   def test_rate_limiting
     @macaw.config = { "macaw" => { "rate_limiting" => { "window" => 1, "max_requests" => 1 } } }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
 
@@ -189,7 +189,7 @@ class ServerTest < Minitest::Test
         }
       }
     }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
     sleep(0.1)
@@ -210,7 +210,7 @@ class ServerTest < Minitest::Test
 
   def test_session
     @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 30 } } }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
     sleep(0.1)
@@ -237,7 +237,7 @@ class ServerTest < Minitest::Test
 
   def test_session_invalidation
     @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 2 } } }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
     sleep(0.1)
@@ -265,7 +265,7 @@ class ServerTest < Minitest::Test
 
   def test_ssl_config_no_ssl
     @macaw.config = nil
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
     assert_nil @server.context
     @server = nil
   end
@@ -279,7 +279,7 @@ class ServerTest < Minitest::Test
         }
       }
     }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
     assert_kind_of OpenSSL::SSL::SSLContext, @server.context
     @server = nil
   end
@@ -303,7 +303,7 @@ class ServerTest < Minitest::Test
     context_mock.expect(:key=, nil, [Object])
 
     OpenSSL::SSL::SSLContext.stub :new, context_mock do
-      @server = Server.new(@macaw)
+      @server = ThreadServer.new(@macaw)
     end
 
     assert_mock context_mock
@@ -320,7 +320,7 @@ class ServerTest < Minitest::Test
       }
     }
     assert_raises Errno::ENOENT do
-      Server.new(@macaw)
+      ThreadServer.new(@macaw)
     end
     @server = nil
   end
@@ -353,7 +353,7 @@ class ServerTest < Minitest::Test
         }
       }
     }
-    @server = Server.new(@macaw)
+    @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
     sleep(0.1)
@@ -387,7 +387,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     assert_raises ArgumentError do
-      Server.new(@macaw)
+      ThreadServer.new(@macaw)
     end
   end
 
