@@ -5,7 +5,7 @@ require_relative "macaw_framework/middlewares/prometheus_middleware"
 require_relative "macaw_framework/data_filters/request_data_filtering"
 require_relative "macaw_framework/middlewares/memory_invalidation_middleware"
 require_relative "macaw_framework/core/cron_runner"
-require_relative "macaw_framework/core/server"
+require_relative "macaw_framework/core/thread_server"
 require_relative "macaw_framework/version"
 require "prometheus/client"
 require "securerandom"
@@ -24,7 +24,7 @@ module MacawFramework
 
     ##
     # @param {Logger} custom_log
-    def initialize(custom_log: Logger.new($stdout), server: Server)
+    def initialize(custom_log: Logger.new($stdout), server: ThreadServer)
       begin
         @routes = []
         @macaw_log ||= custom_log
