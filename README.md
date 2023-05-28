@@ -7,6 +7,7 @@ provides developers with the essential tools to quickly build and deploy their a
 - [MacawFramework](#macawframework)
     * [Features](#features)
     * [Installation](#installation)
+    * [Compatibility](#compatibility)
     * [Usage](#usage)
         + [Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods](#basic-routing-define-routes-with-support-for-get-post-put-patch-and-delete-http-methods)
         + [Caching: Improve performance by caching responses and configuring cache invalidation](#caching-improve-performance-by-caching-responses-and-configuring-cache-invalidation)
@@ -37,6 +38,16 @@ Install the gem and add to the application's Gemfile by executing:
 If bundler is not being used to manage dependencies, install the gem by executing:
 
     $ gem install macaw_framework
+
+## Compatibility
+
+MacawFramework is built to be highly compatible, since it uses only native Ruby code:
+
+- **MRI**: MacawFramework is compatible with Matz's Ruby Interpreter (MRI), version 2.7.0 and onwards. If you are using this version or a more recent one, you should not encounter any compatibility issues.
+
+- **TruffleRuby**: TruffleRuby is another Ruby interpreter that is fully compatible with MacawFramework. This provides developers with more flexibility in their choice of Ruby interpreter.
+
+- **JRuby**: MacawFramework is also compatible with JRuby, a version of Ruby that runs on the Java Virtual Machine (JVM).
 
 ## Usage
 
@@ -153,23 +164,23 @@ end
 
 Values for interval and start_delay are in seconds.
 
-Caution: Defining a lot of jobs with low interval can severely degrade performance.
+**Caution: Defining a lot of jobs with low interval can severely degrade performance.**
 
 ### Tips
 
-The automatic logging and log aspect are now optional. To disable them, simply start Macaw with `custom_log` set to nil.
+- The automatic logging and log aspect are now optional. To disable them, simply start Macaw with `custom_log` set to nil.
 
 ```ruby
 MacawFramework::Macaw.new(custom_log: nil)
 ```
 
-Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
+- Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
 should exist in the app main directory and it need the `cache_invalidation` config set. It is possible to
 provide a list of strings in the property `ignore_headers`. All the client headers with the same name of any
 of the strings provided will be ignored from caching strategy. This is useful to exclude headers like 
 correlation IDs from the caching strategy.
 
-URL parameters like `...endOfUrl?key1=value1&key2=value2` can be find in the `context[:params]`
+- URL parameters like `...endOfUrl?key1=value1&key2=value2` can be find in the `context[:params]`
 
 ```ruby
 m.get('/test_params') do |context|
@@ -177,23 +188,23 @@ m.get('/test_params') do |context|
 end
 ```
 
-Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
+- Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
 exists inside `application.json`.
 
-If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
+- If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
 will be wrapped with HTTPS security using the provided certificate.
 
-The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`,
+- The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`,
 and the supported values for `key_type` are `RSA` and `EC`.
 
-If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
+- If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
 is configurable via the `application.json` file.
 
-The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status 
+- The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status 
 code to be returned to the client and the response headers as a Hash or nil. If an endpoint doesn't return a value or 
 returns nil for body, status code and headers, a default 200 OK status will be sent as the response.
 
-For cron jobs without a start_delay, a value of 0 will be used. For a job without name, a unique name will be generated 
+- For cron jobs without a start_delay, a value of 0 will be used. For a job without name, a unique name will be generated 
 for it.
 
 ## Contributing

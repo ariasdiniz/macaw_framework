@@ -75,6 +75,7 @@
 - Improving log readability
 - Automatic logging is now optional
 
-## [1.1.1] - 2023-xx-xx
+## [1.1.1] - 2023-05-28
 
 - Adding native cron jobs
+- Documentation improvement
