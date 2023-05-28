@@ -5,9 +5,9 @@
 We are committed to addressing security issues in a timely manner. The following versions of MacawFramework are currently supported with security updates:
 
 | Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.x   | :x:                |
+|---------| ------------------ |
+| 1.x.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -24,4 +24,3 @@ Alternatively, you can send an email to aria.diniz.dev@gmail.com with the same i
 4. Once the issue is resolved, we will release a new version of MacawFramework with the necessary security fixes.
 
 Please remember to follow the project's [Code of Conduct](https://github.com/ariasdiniz/macaw_framework/blob/main/CODE_OF_CONDUCT.md) when reporting security vulnerabilities.
-

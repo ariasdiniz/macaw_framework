@@ -68,9 +68,14 @@
 
 - Fixing critical bug where threads were being killed and not respawning after abrupt client connection shutdown
 
-## [1.1.0] - 2023-xx-xx
+## [1.1.0] - 2023-05-20
 
 - Adding support for other SSL/TSL keys other than RSA
 - New mechanism to handle server shutdown properly
 - Improving log readability
 - Automatic logging is now optional
+
+## [1.1.1] - 2023-05-28
+
+- Adding native cron jobs
+- Documentation improvement
