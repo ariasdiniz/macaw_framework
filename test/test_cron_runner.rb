@@ -58,4 +58,19 @@ class TestCronRunner < Minitest::Test
     assert_raises(RuntimeError) { cron_runner.start_cron_job_thread(1, -1, "NegativeStartDelayJob") {} }
     assert_raises(RuntimeError) { cron_runner.start_cron_job_thread(0, 1, "ZeroIntervalJob") {} }
   end
+
+  def test_start_delay_default_to_zero
+    macaw = MockMacaw.new
+    macaw.macaw_log = nil
+    msg_array = []
+
+    cron_runner = CronRunner.new(macaw)
+    cron_runner.start_cron_job_thread(1, nil, "DefaultStartDelayJob") do
+      msg_array << "Job executed with default start delay"
+    end
+    sleep(2)
+
+    assert_includes msg_array, "Job executed with default start delay",
+                    "Job should execute even if start_delay is not set"
+  end
 end

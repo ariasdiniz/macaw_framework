@@ -3,6 +3,7 @@ module MacawFramework
     @bind: String
     @cache: untyped
     @config: Hash[String, untyped]
+    @cron_runner: CronRunner
     @endpoints_to_cache: Array[String]
     @macaw_log: Logger?
 
@@ -30,6 +31,8 @@ module MacawFramework
     def post: -> nil
 
     def put: -> nil
+
+    def setup_job: -> nil
 
     def start!: -> nil
 
