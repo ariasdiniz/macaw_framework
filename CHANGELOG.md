@@ -79,3 +79,9 @@
 
 - Adding native cron jobs
 - Documentation improvement
+
+## [1.1.2] - 2023-05-31
+
+- Fixing retry bug in cron jobs, where retries were made after an exception without waiting for interval
+- Fixing another bug in cron jobs where an exception were thrown when start_delay were not set
+- Documentation improvement
