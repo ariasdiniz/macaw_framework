@@ -16,6 +16,7 @@ class CronRunner
   # @param {String} job_name
   # @param {Proc} block
   def start_cron_job_thread(interval, start_delay, job_name, &block)
+    start_delay ||= 0
     raise "interval can't be <= 0 and start_delay can't be < 0!" if interval <= 0 || start_delay.negative?
 
     @logger&.info("Starting thread for job #{job_name}")
@@ -39,6 +40,7 @@ class CronRunner
         sleep(sleep_time)
       rescue StandardError => e
         @logger&.error("Error executing cron job with name #{name}: #{e.message}")
+        sleep(interval)
       end
     end
     sleep(1)
