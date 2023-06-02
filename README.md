@@ -1,3 +1,4 @@
+[![Gem Version](https://badge.fury.io/rb/macaw_framework.svg)](https://badge.fury.io/rb/macaw_framework) ![CI Pipeline](https://github.com/ariasdiniz/macaw_framework/actions/workflows/main.yml/badge.svg?branch=main)
 # MacawFramework
 
 MacawFramework is a lightweight, easy-to-use web framework for Ruby designed to simplify the development of small to 
@@ -8,6 +9,7 @@ provides developers with the essential tools to quickly build and deploy their a
     * [Features](#features)
     * [Installation](#installation)
     * [Compatibility](#compatibility)
+    * [MacawFramework's Built-In Web Server](#macawframeworks-built-in-web-server)
     * [Usage](#usage)
         + [Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods](#basic-routing-define-routes-with-support-for-get-post-put-patch-and-delete-http-methods)
         + [Caching: Improve performance by caching responses and configuring cache invalidation](#caching-improve-performance-by-caching-responses-and-configuring-cache-invalidation)
@@ -48,6 +50,28 @@ MacawFramework is built to be highly compatible, since it uses only native Ruby 
 - **TruffleRuby**: TruffleRuby is another Ruby interpreter that is fully compatible with MacawFramework. This provides developers with more flexibility in their choice of Ruby interpreter.
 
 - **JRuby**: MacawFramework is also compatible with JRuby, a version of Ruby that runs on the Java Virtual Machine (JVM).
+
+Sure, here's a rewritten section for your README:
+
+## MacawFramework's Built-In Web Server
+
+MacawFramework includes a built-in web server based on Ruby's TCPServer class, providing a lightweight yet robust solution for serving your web applications. It incorporates features such as SSL security and a thread-based architecture, offering a balance of simplicity, performance, and robustness.
+
+### Key Features
+
+- **SSL Security**: Our server integrates SSL security, offering secure communication for your applications. By providing a valid SSL context, the built-in TCPServer will be wrapped in OpenSSL's SSLServer, adding an essential secure transport layer to your web server.
+
+- **Thread-based Architecture**: We employ a thread-based model where a specified number of worker threads are used to handle client connections. Incoming connections are queued in a work queue, where they are then processed by the worker threads, ensuring fair scheduling and load distribution.
+
+- **Thread Pool Management**: We make use of Ruby's built-in synchronization constructs, using a Mutex to safely manage the worker threads pool. A maintenance routine periodically checks the health of the worker threads, respawning any that have died, ensuring consistent server performance.
+
+- **Graceful Shutdown**: Our server is designed to gracefully shut down when required, making sure all pending connections in the work queue are processed before closing the worker threads and the server itself. This ensures that no client requests are abruptly terminated, providing a smooth user experience.
+
+It's worth noting that while our threading model is simple and effective, it has some limitations. The number of concurrent connections it can handle is limited by the number of worker threads, and it could be susceptible to slow clients, which could tie up a worker thread and reduce the server's capacity. However, for JRuby and TruffleRuby users, this threading model can leverage true system-level threading due to the lack of a Global Interpreter Lock (GIL), potentially providing better performance on multi-core systems and handling larger numbers of concurrent connections more efficiently.
+
+Despite these trade-offs, MacawFramework's built-in web server offers a good balance for most web applications, particularly for small to medium scale deployments. For larger-scale applications with high concurrency demands, consider supplementing the built-in server with an event-driven architecture or utilizing a third-party server solution better suited for such scenarios.
+
+In summary, MacawFramework's built-in web server provides a straightforward, efficient, and secure solution for running your web applications, requiring minimal configuration and making deployment a breeze.
 
 ## Usage
 
@@ -165,6 +189,9 @@ end
 Values for interval and start_delay are in seconds.
 
 **Caution: Defining a lot of jobs with low interval can severely degrade performance.**
+
+If you want to build an application with just cron jobs, that don't need to run a web server, you can start
+MacawFramework without running a web server with `start_without_server!` method, instead of `start!`.
 
 ### Tips
 

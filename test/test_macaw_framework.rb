@@ -58,4 +58,30 @@ class TestMacawFramework < Minitest::Spec
     macaw.get("/no_cache_test") {}
     refute_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.no_cache_test"
   end
+
+  def test_start_without_server
+    instance = MacawFramework::Macaw.new(custom_log: nil)
+
+    Thread.new do
+      sleep(1)
+      Thread.main.raise Interrupt
+    end
+
+    assert_output(/Macaw stop flying for some seeds./) do
+      instance.start_without_server!
+    end
+  end
+
+  def test_start
+    instance = MacawFramework::Macaw.new(custom_log: nil)
+
+    Thread.new do
+      sleep(1)
+      Thread.main.raise Interrupt
+    end
+
+    assert_output(/Macaw stop flying for some seeds./) do
+      instance.start!
+    end
+  end
 end

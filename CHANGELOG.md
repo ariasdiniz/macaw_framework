@@ -85,3 +85,9 @@
 - Fixing retry bug in cron jobs, where retries were made after an exception without waiting for interval
 - Fixing another bug in cron jobs where an exception were thrown when start_delay were not set
 - Documentation improvement
+
+## [1.1.3] - 2023-05-31
+
+- Adding start_without_server! method for starting the framework without running a web server
+- Improving documentation
+- Raising the number of default threads from 5 to 10
