@@ -31,7 +31,7 @@ module MacawFramework
         @config = JSON.parse(File.read("application.json"))
         @port = @config["macaw"]["port"] || 8080
         @bind = @config["macaw"]["bind"] || "localhost"
-        @threads = @config["macaw"]["threads"] || 5
+        @threads = @config["macaw"]["threads"] || 10
         unless @config["macaw"]["cache"].nil?
           @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
         end
@@ -57,6 +57,7 @@ module MacawFramework
     # @param {String} path
     # @param {Proc} block
     # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.get("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
@@ -71,6 +72,8 @@ module MacawFramework
     # @param {String} path
     # @param {Boolean} cache
     # @param {Proc} block
+    # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.post("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
@@ -84,6 +87,8 @@ module MacawFramework
     # with the respective path.
     # @param {String} path
     # @param {Proc} block
+    # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.put("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
@@ -97,6 +102,8 @@ module MacawFramework
     # with the respective path.
     # @param {String} path
     # @param {Proc} block
+    # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.patch("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
@@ -110,6 +117,8 @@ module MacawFramework
     # with the respective path.
     # @param {String} path
     # @param {Proc} block
+    # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.delete("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
@@ -125,6 +134,7 @@ module MacawFramework
     # @param {String} job_name
     # @param {Proc} block
     # @example
+    #
     # macaw = MacawFramework::Macaw.new
     # macaw.setup_job(interval: 60, start_delay: 60, job_name: "job 1") do
     #   puts "I'm a cron job that runs every minute"
@@ -161,6 +171,18 @@ module MacawFramework
         @server.close
         @macaw_log.info("Macaw stop flying for some seeds...")
       end
+    end
+
+    ##
+    # This method is intended to start the framework
+    # without an web server. This can be useful when
+    # you just want to keep cron jobs running, without
+    # mapping any HTTP endpoints.
+    def start_without_server!
+      @macaw_log.nil? ? puts("Application starting") : @macaw_log.info("Application starting")
+      loop { sleep(3600) }
+    rescue Interrupt
+      @macaw_log.nil? ? puts("Macaw stop flying for some seeds.") : @macaw_log.info("Macaw stop flying for some seeds.")
     end
 
     private
