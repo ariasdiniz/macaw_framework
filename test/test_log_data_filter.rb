@@ -28,12 +28,4 @@ class TestLogDataFilter < Minitest::Test
     sanitized_data = LogDataFilter.sanitize_for_logging(long_data)
     assert_equal truncated_data, sanitized_data
   end
-
-  def test_sanitize_for_logging_remove_control_characters
-    data_with_control_chars = "This is a test\0string\rwith\ncontrol\x1Fcharacters."
-    data_without_control_chars = "This is a teststringwithcontrolcharacters."
-
-    sanitized_data = LogDataFilter.sanitize_for_logging(data_with_control_chars)
-    assert_equal data_without_control_chars, sanitized_data
-  end
 end

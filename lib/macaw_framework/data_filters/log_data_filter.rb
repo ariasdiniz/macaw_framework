@@ -34,10 +34,8 @@ module LogDataFilter
     return "" if data.nil?
 
     data = data.to_s.force_encoding("UTF-8")
-    data = data.gsub(/[\x00-\x1F\x7F]/, "")
-    data = data.gsub(/\s+/, " ")
-    data = data.gsub("/", "")
     data = data.slice(0, config[:max_length])
+    data = data.gsub("\\", "")
 
     sensitive_fields.each do |field|
       next unless data.include?(field.to_s)
