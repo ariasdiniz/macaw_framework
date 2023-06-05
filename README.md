@@ -134,7 +134,7 @@ end
   "macaw": {
     "port": 8080,
     "bind": "localhost",
-    "threads": 10,
+    "threads": 200,
     "log": {
       "max_length": 1024,
       "sensitive_fields": [
@@ -214,6 +214,8 @@ m.get('/test_params') do |context|
   context[:params]["key1"] # returns: value1
 end
 ```
+
+- The default number of virtual threads in the thread pool is 200.
 
 - Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
 exists inside `application.json`.

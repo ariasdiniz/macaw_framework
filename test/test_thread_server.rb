@@ -19,7 +19,7 @@ class TestEndpoint
     @routes = %w[get.hello get.ok get.ise post.set_session get.get_session]
     @port = 9292
     @bind = "localhost"
-    @threads = 4
+    @threads = 1
     @macaw_log = nil
     @config = nil
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
