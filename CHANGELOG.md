@@ -91,3 +91,8 @@
 - Adding start_without_server! method for starting the framework without running a web server
 - Improving documentation
 - Raising the number of default threads from 5 to 10
+
+## [1.1.3] - 2023-06-05
+
+- Changing default number of threads to 200
+- Fixing error where sensitive inputs were not being hashed

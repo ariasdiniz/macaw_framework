@@ -31,7 +31,7 @@ module MacawFramework
         @config = JSON.parse(File.read("application.json"))
         @port = @config["macaw"]["port"] || 8080
         @bind = @config["macaw"]["bind"] || "localhost"
-        @threads = @config["macaw"]["threads"] || 10
+        @threads = @config["macaw"]["threads"] || 200
         unless @config["macaw"]["cache"].nil?
           @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
         end
