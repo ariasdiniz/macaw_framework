@@ -7,8 +7,7 @@ require "openssl"
 # Class responsible for providing a default
 # webserver with Ruby Threads. This Server is subject
 # to the MRI Global Interpreter Lock, thus it will use
-# only a single physical Thread. For a true multi threaded
-# server, check the RactorServer.
+# only a single physical Thread.
 class ThreadServer
   include ServerBase
 
