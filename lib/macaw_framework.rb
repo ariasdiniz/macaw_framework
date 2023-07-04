@@ -44,7 +44,7 @@ module MacawFramework
       @port ||= 8080
       @bind ||= "localhost"
       @config ||= nil
-      @threads ||= 5
+      @threads ||= 200
       @endpoints_to_cache = []
       @prometheus ||= nil
       @prometheus_middleware ||= nil
