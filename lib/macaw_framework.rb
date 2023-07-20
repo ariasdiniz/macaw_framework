@@ -24,7 +24,7 @@ module MacawFramework
 
     ##
     # @param {Logger} custom_log
-    def initialize(custom_log: Logger.new($stdout), server: ThreadServer)
+    def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: __dir__)
       begin
         @routes = []
         @macaw_log ||= custom_log
@@ -41,6 +41,7 @@ module MacawFramework
       rescue StandardError => e
         @macaw_log&.warn(e.message)
       end
+      create_endpoint_public_files(dir)
       @port ||= 8080
       @bind ||= "localhost"
       @config ||= nil
@@ -199,6 +200,18 @@ module MacawFramework
         |context = { headers: {}, body: "", params: {} }|
                                                          })
       @routes << "#{prefix}.#{path_clean}"
+    end
+
+    def get_files_public_folder(dir)
+      folder_path = Pathname.new(File.expand_path("public", dir))
+      file_paths = folder_path.glob("**/*").select(&:file?)
+      file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
+    end
+
+    def create_endpoint_public_files(dir)
+      get_files_public_folder(dir).each do |file|
+        get(file) { |_context| return File.read(file).to_s, 200, {} }
+      end
     end
   end
 end

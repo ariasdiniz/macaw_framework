@@ -84,4 +84,11 @@ class TestMacawFramework < Minitest::Spec
       instance.start!
     end
   end
+
+  def test_create_endpoints_for_public_files
+    instance = MacawFramework::Macaw.new(custom_log: nil, dir: __dir__)
+
+    assert_respond_to instance, "get.public.teste.txt"
+    assert_respond_to instance, "get.public.img.img.png"
+  end
 end

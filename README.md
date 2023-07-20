@@ -16,6 +16,7 @@ provides developers with the essential tools to quickly build and deploy their a
         + [Session management: Handle user sessions securely with server-side in-memory storage](#session-management-handle-user-sessions-securely-with-server-side-in-memory-storage)
         + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-rate-limiting-ssl-support-and-prometheus-integration)
         + [Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support](#monitoring-easily-monitor-your-application-performance-and-metrics-with-built-in-prometheus-support)
+        + [Routing for "public" Folder: Serve Static Assets](#routing-for-public-folder-serve-static-assets)
         + [Cron Jobs](#cron-jobs)
         + [Tips](#tips)
     * [Contributing](#contributing)
@@ -33,7 +34,7 @@ provides developers with the essential tools to quickly build and deploy their a
 
 ## Installation
 
-Install the gem and add to the application's Gemfile by executing:
+Install the gem and add it to the application's Gemfile by executing:
 
     $ bundle add macaw_framework
 
@@ -50,8 +51,6 @@ MacawFramework is built to be highly compatible, since it uses only native Ruby 
 - **TruffleRuby**: TruffleRuby is another Ruby interpreter that is fully compatible with MacawFramework. This provides developers with more flexibility in their choice of Ruby interpreter.
 
 - **JRuby**: MacawFramework is also compatible with JRuby, a version of Ruby that runs on the Java Virtual Machine (JVM).
-
-Sure, here's a rewritten section for your README:
 
 ## MacawFramework's Built-In Web Server
 
@@ -88,26 +87,24 @@ end
 
 m.post('/submit_data/:path_variable') do |context|
   context[:body] # Client body data
-  context[:params] # Client params, like url parameters or variables
+  context[:params] # Client params, like URL parameters or variables
   context[:headers] # Client headers
   context[:params][:path_variable] # The defined path variable can be found in :params
   context[:client] # Client session
 end
 
 m.start!
-
 ```
 
 ### Caching: Improve performance by caching responses and configuring cache invalidation
 
 ```ruby
 m.get('/cached_data', cache: true) do |context|
-# Retrieve data
+  # Retrieve data
 end
 ```
 
-Observation: To activate caching you also have to set it's properties on the application.json file. If you don't, caching strategy will not work.
-See section below for configurations.
+*Observation: To activate caching, you also have to set its properties in the `application.json` file. If you don't, the caching strategy will not work. See the Configuration section below for more details.*
 
 ### Session management: Handle user sessions securely with server-side in-memory storage
 
@@ -172,10 +169,26 @@ end
 curl http://localhost:8080/metrics
 ```
 
+### Routing for "public" Folder: Serve Static Assets
+
+MacawFramework allows you to serve static assets, such as CSS, JavaScript, images, etc., through the "public" folder. 
+To enable this functionality, make sure the "public" folder is placed in the same directory as the main.rb file. 
+The "public" folder should contain any static assets required by your web application.
+
+To avoid issues, instantiate the Macaw using the `dir` proporty as following:
+
+```ruby
+MacawFramework::Macaw.new(dir: __dir__)
+```
+
+By default, MacawFramework will automatically serve files from the "public" folder recursively when matching requests 
+are made. For example, if you have an image file named "logo.png" inside a "img" folder in the "public" folder, it will 
+be accessible at http://yourdomain.com/img/logo.png without any additional configuration.
+
 ### Cron Jobs
 
-Macaw Framework supports the declaration of cron jobs right in your application code. This feature allows developers to 
-define tasks that run at set intervals, starting after an optional delay. Each job runs in a separate thread, meaning 
+Macaw Framework supports the declaration of cron jobs right in your application code. This feature allows developers to
+define tasks that run at set intervals, starting after an optional delay. Each job runs in a separate thread, meaning
 your cron jobs can execute in parallel without blocking the rest of your application.
 
 Here's an example of how to declare a cron job:
@@ -191,7 +204,7 @@ Values for interval and start_delay are in seconds.
 **Caution: Defining a lot of jobs with low interval can severely degrade performance.**
 
 If you want to build an application with just cron jobs, that don't need to run a web server, you can start
-MacawFramework without running a web server with `start_without_server!` method, instead of `start!`.
+MacawFramework without running a web server with the `start_without_server!` method, instead of `start!`.
 
 ### Tips
 
@@ -201,13 +214,13 @@ MacawFramework without running a web server with `start_without_server!` method,
 MacawFramework::Macaw.new(custom_log: nil)
 ```
 
-- Cache invalidation time should be specified in seconds. In order to enable caching, The application.json file
-should exist in the app main directory and it need the `cache_invalidation` config set. It is possible to
-provide a list of strings in the property `ignore_headers`. All the client headers with the same name of any
-of the strings provided will be ignored from caching strategy. This is useful to exclude headers like 
-correlation IDs from the caching strategy.
+- Cache invalidation time should be specified in seconds. In order to enable caching, The `application.json` file
+  should exist in the app main directory and it needs the `cache_invalidation` config set. It is possible to
+  provide a list of strings in the property `ignore_headers`. All the client headers with the same name as any
+  of the strings provided will be ignored from the caching strategy. This is useful to exclude headers like
+  correlation IDs from the caching strategy.
 
-- URL parameters like `...endOfUrl?key1=value1&key2=value2` can be find in the `context[:params]`
+- URL parameters like `...endOfUrl?key1=value1&key2=value2` can be found in the `context[:params]`
 
 ```ruby
 m.get('/test_params') do |context|
@@ -218,23 +231,31 @@ end
 - The default number of virtual threads in the thread pool is 200.
 
 - Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
-exists inside `application.json`.
+  exists inside `application.json`.
 
 - If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
-will be wrapped with HTTPS security using the provided certificate.
+  will be wrapped with HTTPS security using the provided certificate.
 
-- The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2` and `TLS1.3`,
-and the supported values for `key_type` are `RSA` and `EC`.
+- The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2`, and `TLS1.3`,
+  and the supported values for `key_type` are `RSA` and `EC`.
 
-- If prometheus is enabled, a get endpoint will be defined at path `/metrics` to collect prometheus metrics. This path
-is configurable via the `application.json` file.
+- If Prometheus is enabled, a GET endpoint will be defined at path `/metrics` to collect Prometheus metrics. This path
+  is configurable via the `application.json` file.
 
-- The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status 
-code to be returned to the client and the response headers as a Hash or nil. If an endpoint doesn't return a value or 
-returns nil for body, status code and headers, a default 200 OK status will be sent as the response.
+- The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status
+  code to be returned to the client, and the response headers as a Hash or nil. If an endpoint doesn't return a value or
+  returns nil for body, status code, and headers, a default 200 OK status will be sent as the response.
 
-- For cron jobs without a start_delay, a value of 0 will be used. For a job without name, a unique name will be generated 
-for it.
+- For cron jobs without a start_delay, a value of 0 will be used. For a job without a name, a unique name will be generated
+  for it.
+
+- Ensure the "public" folder is placed in the same directory as the main.rb file: The "public" folder should contain any static assets, 
+  such as CSS, JavaScript, or images, that your web application requires. Placing it in the same directory as the main.rb file ensures 
+  that the server can correctly serve these assets.
+
+- Always run the main.rb file from a terminal in the same directory: To avoid any potential issues related to file paths and relative paths, 
+  make sure to run the main.rb file from a terminal in the same directory where it is located. This will ensure that the application can access 
+  the necessary files and resources without any problems.
 
 ## Contributing
 
@@ -246,4 +267,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the MacawFramework project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/ariasdiniz/macaw_framework/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the MacawFramework project's codebases, issue trackers, chat rooms, and mailing lists is expected to follow the [code of conduct](https://github.com/ariasdiniz/macaw_framework/blob/main/CODE_OF_CONDUCT.md).
