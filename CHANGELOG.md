@@ -96,3 +96,7 @@
 
 - Improving number of virtual threads to 200.
 - Fixing misleading description on ThreadServer.
+
+## [1.1.6] - 2023-07-19
+
+- Creating support for public folder
