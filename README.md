@@ -175,7 +175,7 @@ MacawFramework allows you to serve static assets, such as CSS, JavaScript, image
 To enable this functionality, make sure the "public" folder is placed in the same directory as the main.rb file. 
 The "public" folder should contain any static assets required by your web application.
 
-To avoid issues, instantiate the Macaw using the `dir` proporty as following:
+To avoid issues, instantiate the Macaw using the `dir` property as following:
 
 ```ruby
 MacawFramework::Macaw.new(dir: __dir__)
@@ -184,6 +184,8 @@ MacawFramework::Macaw.new(dir: __dir__)
 By default, MacawFramework will automatically serve files from the "public" folder recursively when matching requests 
 are made. For example, if you have an image file named "logo.png" inside a "img" folder in the "public" folder, it will 
 be accessible at http://yourdomain.com/img/logo.png without any additional configuration.
+
+#### Caution: This is incompatible with most non-unix systems, such as Windows. If you are using a non-unix system, you will need to manually configure the "public" folder and use dir as nil to avoid problems.
 
 ### Cron Jobs
 
