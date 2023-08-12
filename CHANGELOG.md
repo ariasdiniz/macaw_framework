@@ -100,3 +100,7 @@
 ## [1.1.6] - 2023-07-19
 
 - Creating support for public folder
+
+## [1.1.7] - 2023-08-12
+
+- Fixing a bug where the server would not start with the public folder feature enabled on non-Unix systems

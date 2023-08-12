@@ -24,7 +24,7 @@ module MacawFramework
 
     ##
     # @param {Logger} custom_log
-    def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: __dir__)
+    def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: nil)
       begin
         @routes = []
         @macaw_log ||= custom_log
@@ -203,9 +203,13 @@ module MacawFramework
     end
 
     def get_files_public_folder(dir)
-      folder_path = Pathname.new(File.expand_path("public", dir))
-      file_paths = folder_path.glob("**/*").select(&:file?)
-      file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
+      if dir.nil?
+        []
+      else
+        folder_path = Pathname.new(File.expand_path("public", dir))
+        file_paths = folder_path.glob("**/*").select(&:file?)
+        file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
+      end
     end
 
     def create_endpoint_public_files(dir)
