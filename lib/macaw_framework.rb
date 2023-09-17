@@ -198,18 +198,16 @@ module MacawFramework
       @macaw_log&.info("Defining #{prefix.upcase} endpoint at /#{path}")
       define_singleton_method("#{prefix}.#{path_clean}", block || lambda {
         |context = { headers: {}, body: "", params: {} }|
-                                                         })
+      })
       @routes << "#{prefix}.#{path_clean}"
     end
 
     def get_files_public_folder(dir)
-      if dir.nil?
-        []
-      else
-        folder_path = Pathname.new(File.expand_path("public", dir))
-        file_paths = folder_path.glob("**/*").select(&:file?)
-        file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
-      end
+      return [] if dir.nil?
+
+      folder_path = Pathname.new(File.expand_path("public", dir))
+      file_paths = folder_path.glob("**/*").select(&:file?)
+      file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
     end
 
     def create_endpoint_public_files(dir)
