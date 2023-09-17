@@ -1,5 +1,3 @@
-## [Unreleased]
-
 ## [0.1.0] - 2022-12-05
 
 - Initial release
@@ -104,3 +102,8 @@
 ## [1.1.7] - 2023-08-12
 
 - Fixing a bug where the server would not start with the public folder feature enabled on non-Unix systems
+
+## [1.1.8] - 2023-09-17
+
+- Optimizing bug report template on GitHub
+- Optimizing return clause of the get_files_public_folder method
