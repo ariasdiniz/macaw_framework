@@ -62,7 +62,7 @@ class ThreadServer
     end
 
     loop do
-      @work_queue << @server.accept
+      @work_queue << @server.accept unless @is_shutting_down
     rescue OpenSSL::SSL::SSLError => e
       @macaw_log&.error("SSL error: #{e.message}")
     rescue IOError, Errno::EBADF
