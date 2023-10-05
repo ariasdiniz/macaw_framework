@@ -8,6 +8,7 @@ provides developers with the essential tools to quickly build and deploy their a
 - [MacawFramework](#macawframework)
     * [Features](#features)
     * [Installation](#installation)
+    * [Performance](#performance)
     * [Compatibility](#compatibility)
     * [MacawFramework's Built-In Web Server](#macawframeworks-built-in-web-server)
     * [Usage](#usage)
@@ -41,6 +42,10 @@ Install the gem and add it to the application's Gemfile by executing:
 If bundler is not being used to manage dependencies, install the gem by executing:
 
     $ gem install macaw_framework
+
+## Performance
+
+We evaluated MacawFramework (Version 1.2.0) to assess its ability to handle simultaneous requests under heavy load. Disabling non-essential features, such as cache and logging, we observed remarkable results. The framework demonstrated efficient memory usage (243.3 MB average) and handled an impressive 600,000 HTTP requests with an average response time of just 1 millisecond. Throughput reached an outstanding 10,196.45 requests per second. These findings suggest that MacawFramework is well-equipped to handle substantial HTTP traffic without significant performance degradation. For detailed results, please refer to the [full report](https://github.com/ariasdiniz/macaw_performance_test).
 
 ## Compatibility
 
