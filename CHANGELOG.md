@@ -108,6 +108,10 @@
 - Optimizing bug report template on GitHub
 - Optimizing return clause of the get_files_public_folder method
 
-## [1.2.0] - 2023-09-17
+## [1.2.0] - 2023-10-05
 
 - Fixing bug where the server would accept new connections during shutdown
+
+## [1.2.1] - 2023-11-06
+
+- Simplifying logging aspect for readability
