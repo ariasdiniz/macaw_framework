@@ -12,17 +12,12 @@ module LoggingAspect
     return super(*args) if logger.nil?
 
     endpoint_name = args[1].split(".")[1..].join("/")
-    logger.info(LogDataFilter.sanitize_for_logging(
-                  "Request received for #{endpoint_name} with arguments: #{args[2..]}"
-                ))
+    logger.info("Request received for [#{endpoint_name}] from [#{args[-1]}]")
 
     begin
       response = super(*args)
-      logger.info(LogDataFilter.sanitize_for_logging("Response for #{endpoint_name}: #{response}"))
     rescue StandardError => e
-      logger.error(
-        LogDataFilter.sanitize_for_logging("Error processing #{endpoint_name}: #{e.message}\n#{e.backtrace.join("\n")}")
-      )
+      logger.error("#{e.message}\n#{e.backtrace.join("\n")}")
       raise e
     end
 
