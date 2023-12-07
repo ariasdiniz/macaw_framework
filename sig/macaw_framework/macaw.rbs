@@ -9,18 +9,17 @@ module MacawFramework
 
     @prometheus: untyped
     @prometheus_middleware: untyped
-    @server: Server
+    @server: untyped
 
     @threads: Integer
 
-    attr_reader bind: String
+    attr_accessor bind: String
     attr_reader config: Hash[String, untyped]
     attr_reader jobs: Array[String]
     attr_reader macaw_log: Logger?
-    attr_reader port: Integer
+    attr_accessor port: Integer
     attr_reader routes: Array[String]
-
-    attr_reader threads: Integer
+    attr_accessor threads: Integer
 
     def delete: -> nil
 

@@ -20,7 +20,8 @@ module MacawFramework
   class Macaw
     ##
     # Array containing the routes defined in the application
-    attr_reader :routes, :port, :bind, :threads, :macaw_log, :config, :jobs
+    attr_reader :routes, :macaw_log, :config, :jobs
+    attr_accessor :port, :bind, :threads
 
     ##
     # @param {Logger} custom_log
@@ -49,7 +50,7 @@ module MacawFramework
       @endpoints_to_cache = []
       @prometheus ||= nil
       @prometheus_middleware ||= nil
-      @server = server.new(self, @endpoints_to_cache, @cache, @prometheus, @prometheus_middleware)
+      @server_class = server
     end
 
     ##
@@ -161,6 +162,7 @@ module MacawFramework
         @macaw_log.info("Number of threads: #{@threads}")
         @macaw_log.info("---------------------------------")
       end
+      @server = @server_class.new(self, @endpoints_to_cache, @cache, @prometheus, @prometheus_middleware)
       server_loop(@server)
     rescue Interrupt
       if @macaw_log.nil?

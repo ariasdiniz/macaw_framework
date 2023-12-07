@@ -137,12 +137,6 @@ end
     "port": 8080,
     "bind": "localhost",
     "threads": 200,
-    "log": {
-      "max_length": 1024,
-      "sensitive_fields": [
-        "password"
-      ]
-    },
     "cache": {
       "cache_invalidation": 3600,
       "ignore_headers": [
@@ -230,9 +224,22 @@ MacawFramework::Macaw.new(custom_log: nil)
 - URL parameters like `...endOfUrl?key1=value1&key2=value2` can be found in the `context[:params]`
 
 ```ruby
+m = MacawFramework::Macaw.new
+
 m.get('/test_params') do |context|
   context[:params]["key1"] # returns: value1
 end
+```
+
+- You can also set `port`, `bind` and `threads` programmatically as shown below. This will override values set in the
+`application.json` file
+
+```ruby
+m = MacawFramework::Macaw.new
+
+m.port = 3000
+m.bind = '0.0.0.0'
+m.threads = 300
 ```
 
 - The default number of virtual threads in the thread pool is 200.
