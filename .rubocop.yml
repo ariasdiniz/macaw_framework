@@ -1,5 +1,7 @@
 AllCops:
   TargetRubyVersion: 2.7
+  SuggestExtensions: false
+  NewCops: disable
 
 Style/StringLiterals:
   Enabled: true

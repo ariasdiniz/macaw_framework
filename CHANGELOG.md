@@ -115,3 +115,7 @@
 ## [1.2.1] - 2023-11-06
 
 - Simplifying logging aspect for readability
+
+## [1.2.2]
+
+- Including possibility of setting port, bind and threads programmatically

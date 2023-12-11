@@ -76,7 +76,7 @@ class TestMacawFramework < Minitest::Spec
     instance = MacawFramework::Macaw.new(custom_log: nil)
 
     Thread.new do
-      sleep(1)
+      sleep(3)
       Thread.main.raise Interrupt
     end
 
