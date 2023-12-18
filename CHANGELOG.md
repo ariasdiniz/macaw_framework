@@ -119,3 +119,7 @@
 ## [1.2.2]
 
 - Including possibility of setting port, bind and threads programmatically
+
+## [1.2.3]
+
+- Fixing import of pathname
