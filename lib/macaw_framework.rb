@@ -198,7 +198,8 @@ module MacawFramework
     def map_new_endpoint(prefix, cache, path, &block)
       @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" if cache
       path_clean = RequestDataFiltering.extract_path(path)
-      @macaw_log&.info("Defining #{prefix.upcase} endpoint at /#{path}")
+      slash = path[0] == "/" ? "" : "/"
+      @macaw_log&.info("Defining #{prefix.upcase} endpoint at #{slash}#{path}")
       define_singleton_method("#{prefix}.#{path_clean}", block || lambda {
         |context = { headers: {}, body: "", params: {} }|
       })
