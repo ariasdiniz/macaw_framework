@@ -111,7 +111,7 @@ end
 
 *Observation: To activate caching, you also have to set its properties in the `application.json` file. If you don't, the caching strategy will not work. See the Configuration section below for more details.*
 
-### Session management: Handle user sessions securely with server-side in-memory storage
+### Session management: Handle user sessions with server-side in-memory storage
 
 ```ruby
 m.get('/login') do |context|
@@ -128,6 +128,8 @@ m.get('/dashboard') do |context|
   end
 end
 ```
+
+**Caution: This feature is vulnerable to IP spoofing and may disrupt sessions on devices sharing the same network (e.g., Wi-Fi).**
 
 ### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
 
