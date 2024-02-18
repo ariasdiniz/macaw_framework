@@ -123,3 +123,8 @@
 ## [1.2.3]
 
 - Fixing import of pathname
+
+## [1.2.4]
+
+- Fixing small bug on lof during endpoint declaration
+- Disclosing security issue on session storage
