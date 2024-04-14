@@ -128,3 +128,7 @@
 
 - Fixing small bug on lof during endpoint declaration
 - Disclosing security issue on session storage
+
+## [1.2.5]
+
+- Improvements to cache usability

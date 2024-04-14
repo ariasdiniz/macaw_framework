@@ -83,12 +83,6 @@ module ServerBase
     )
   end
 
-  def set_cache_ignored_h
-    return unless @macaw.config&.dig("macaw", "cache", "ignore_headers")
-
-    @macaw.config["macaw"]["cache"]["ignore_headers"] || []
-  end
-
   def set_ssl
     ssl_config = @macaw.config["macaw"]["ssl"] if @macaw.config&.dig("macaw", "ssl")
     ssl_config ||= nil

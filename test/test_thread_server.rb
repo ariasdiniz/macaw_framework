@@ -12,7 +12,7 @@ require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "../lib/macaw_framework/errors/too_many_requests_error"
 
 class TestEndpoint
-  attr_reader :routes, :port, :bind, :threads, :macaw_log
+  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods
   attr_accessor :config
 
   def initialize
@@ -22,6 +22,7 @@ class TestEndpoint
     @threads = 1
     @macaw_log = nil
     @config = nil
+    @cached_methods = []
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
     define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })

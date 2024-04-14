@@ -104,7 +104,7 @@ m.start!
 ### Caching: Improve performance by caching responses and configuring cache invalidation
 
 ```ruby
-m.get('/cached_data', cache: true) do |context|
+m.get('/cached_data', cache: ["header_to_cache", "query_param_to_cache"]) do |context|
   # Retrieve data
 end
 ```
@@ -140,11 +140,7 @@ end
     "bind": "localhost",
     "threads": 200,
     "cache": {
-      "cache_invalidation": 3600,
-      "ignore_headers": [
-        "header-to-be-ignored-from-caching-strategy",
-        "another-header-to-be-ignored-from-caching-strategy"
-      ]
+      "cache_invalidation": 3600
     },
     "prometheus": {
       "endpoint": "/metrics"

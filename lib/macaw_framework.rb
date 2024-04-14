@@ -19,16 +19,18 @@ module MacawFramework
   # Class responsible for creating endpoints and
   # starting the web server.
   class Macaw
-    ##
-    # Array containing the routes defined in the application
-    attr_reader :routes, :macaw_log, :config, :jobs
+    attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods
     attr_accessor :port, :bind, :threads
 
     ##
+    # Initialize Macaw Class
     # @param {Logger} custom_log
+    # @param {ThreadServer} server
+    # @param {String?} dir
     def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: nil)
       begin
         @routes = []
+        @cached_methods = {}
         @macaw_log ||= custom_log
         @config = JSON.parse(File.read("application.json"))
         @port = @config["macaw"]["port"] || 8080
@@ -65,7 +67,7 @@ module MacawFramework
     # macaw.get("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
     # end
-    def get(path, cache: false, &block)
+    def get(path, cache: [], &block)
       map_new_endpoint("get", cache, path, &block)
     end
 
@@ -81,7 +83,7 @@ module MacawFramework
     # macaw.post("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
     # end
-    def post(path, cache: false, &block)
+    def post(path, cache: [], &block)
       map_new_endpoint("post", cache, path, &block)
     end
 
@@ -96,7 +98,7 @@ module MacawFramework
     # macaw.put("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
     # end
-    def put(path, cache: false, &block)
+    def put(path, cache: [], &block)
       map_new_endpoint("put", cache, path, &block)
     end
 
@@ -111,7 +113,7 @@ module MacawFramework
     # macaw.patch("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
     # end
-    def patch(path, cache: false, &block)
+    def patch(path, cache: [], &block)
       map_new_endpoint("patch", cache, path, &block)
     end
 
@@ -126,7 +128,7 @@ module MacawFramework
     # macaw.delete("/hello") do |context|
     #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
     # end
-    def delete(path, cache: false, &block)
+    def delete(path, cache: [], &block)
       map_new_endpoint("delete", cache, path, &block)
     end
 
@@ -196,7 +198,8 @@ module MacawFramework
     end
 
     def map_new_endpoint(prefix, cache, path, &block)
-      @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" if cache
+      @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" unless cache.empty?
+      @cached_methods["#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}"] = cache unless cache.empty?
       path_clean = RequestDataFiltering.extract_path(path)
       slash = path[0] == "/" ? "" : "/"
       @macaw_log&.info("Defining #{prefix.upcase} endpoint at #{slash}#{path}")
