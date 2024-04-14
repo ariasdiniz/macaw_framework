@@ -19,7 +19,6 @@ module MacawFramework
   # Class responsible for creating endpoints and
   # starting the web server.
   class Macaw
-
     attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods
     attr_accessor :port, :bind, :threads
 
