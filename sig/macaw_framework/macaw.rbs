@@ -2,6 +2,7 @@ module MacawFramework
   class Macaw
     @bind: String
     @cache: untyped
+    @cached_methods: Hash[String, Array[String]]
     @config: Hash[String, untyped]
     @cron_runner: CronRunner
     @endpoints_to_cache: Array[String]

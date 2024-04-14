@@ -43,9 +43,9 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
-    cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
+    cache.cache[:"[{:params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" } }
     )
 
@@ -57,14 +57,14 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" } }
     )
 
     assert_equal ["Original method response", 200, { "a" => "b" }], response
     assert_equal(
       ["Original method response", 200, { "a" => "b" }],
-      cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
+      cache.cache[:"[{:params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
     )
   end
 
@@ -73,14 +73,14 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: ["correlation-id"] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b", "correlation-id" => "unique-id-1" } }
     )
 
     assert_equal ["Original method response", 200, { "a" => "b" }], response
     assert_equal(
       ["Original method response", 200, { "a" => "b" }],
-      cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
+      cache.cache[:"[{:params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
     )
   end
 
@@ -88,9 +88,9 @@ class TestCacheAspect < Minitest::Test
     test_class = TestClass.new
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
-    cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
+    cache.cache[:"[{:params=>nil, :headers=>{\"a\"=>\"b\"}}]"] = ["Cached response", Time.now]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: ["correlation-id"] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b", "correlation-id" => "unique-id-2" } }
     )
 
@@ -102,14 +102,14 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" }, status: 200 }
     )
 
     assert_equal ["Original method response", 200, { "a" => "b" }], response
     assert_equal(
       ["Original method response", 200, { "a" => "b" }],
-      cache.cache[:"[{:body=>\"a\", :params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
+      cache.cache[:"[{:params=>nil, :headers=>{\"a\"=>\"b\"}}]"][0]
     )
   end
 
@@ -118,7 +118,7 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" }, status: 302 }
     )
 
@@ -131,7 +131,7 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" }, status: 404 }
     )
 
@@ -144,7 +144,7 @@ class TestCacheAspect < Minitest::Test
     cache = CacheMock.new
     endpoints_to_cache = ["method1"]
     response = test_class.call_endpoint(
-      { cache: cache, endpoints_to_cache: endpoints_to_cache, ignored_headers: [] },
+      { cache: cache, endpoints_to_cache: endpoints_to_cache, cached_methods: { "method1" => ["a"] } },
       "method1", { body: "a", params: nil, headers: { "a" => "b" }, status: 500 }
     )
 

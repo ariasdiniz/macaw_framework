@@ -49,7 +49,7 @@ class TestMacawFramework < Minitest::Spec
 
   def test_endpoint_cache_configuration
     macaw = MacawFramework::Macaw.new(custom_log: nil)
-    macaw.get("/cache_test", cache: true) {}
+    macaw.get("/cache_test", cache: ["test"]) {}
     assert_includes macaw.instance_variable_get(:@endpoints_to_cache), "get.cache_test"
   end
 

@@ -32,11 +32,13 @@ class ThreadServer
     @macaw_log = macaw.macaw_log
     @num_threads = macaw.threads
     @work_queue = Queue.new
-    ignored_headers = set_cache_ignored_h
     set_features
     @rate_limit ||= nil
-    ignored_headers ||= nil
-    @cache = { cache: cache, endpoints_to_cache: endpoints_to_cache || [], ignored_headers: ignored_headers }
+    @cache = {
+      cache: cache,
+      endpoints_to_cache: endpoints_to_cache || [],
+      cached_methods: macaw.cached_methods
+    }
     @prometheus = prometheus
     @prometheus_middleware = prometheus_mw
     @workers = []
