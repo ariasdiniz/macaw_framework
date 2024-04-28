@@ -12,7 +12,7 @@ require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
 require_relative "../lib/macaw_framework/errors/too_many_requests_error"
 
 class TestEndpoint
-  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods
+  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header
   attr_accessor :config
 
   def initialize
@@ -23,6 +23,7 @@ class TestEndpoint
     @macaw_log = nil
     @config = nil
     @cached_methods = []
+    @secure_header = "X-Session-ID"
     define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
     define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
     define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
@@ -220,13 +221,14 @@ class ServerTest < Minitest::Test
     client1 = TCPSocket.new(@bind, @port)
     client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
     response1 = client1.read
+    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(": ")[1]
     client1.close
 
     assert_match(/Session set/, response1)
 
     # Second request to get the session value
     client2 = TCPSocket.new(@bind, @port)
-    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\nX-Session-ID: #{session}\r\n\r\n"
     response2 = client2.read
     client2.close
 
@@ -246,6 +248,7 @@ class ServerTest < Minitest::Test
     client1 = TCPSocket.new(@bind, @port)
     client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
     response1 = client1.read
+    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(": ")[1]
     client1.close
 
     assert_match(/Session set/, response1)
@@ -253,7 +256,7 @@ class ServerTest < Minitest::Test
     sleep(3.5)
 
     client2 = TCPSocket.new(@bind, @port)
-    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\nX-Session-ID: #{session}\r\n\r\n"
     response2 = client2.read
     client2.close
 

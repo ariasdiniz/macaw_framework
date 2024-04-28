@@ -10,6 +10,7 @@ module MacawFramework
 
     @prometheus: untyped
     @prometheus_middleware: untyped
+    @secure_header: String
     @server: untyped
 
     @threads: Integer
