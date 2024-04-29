@@ -132,3 +132,7 @@
 ## [1.2.5]
 
 - Improvements to cache usability
+
+## [1.2.6]
+
+- Improving session strategy and fixing vulnerabilities on it.

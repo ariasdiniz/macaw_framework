@@ -113,6 +113,14 @@ end
 
 ### Session management: Handle user sessions with server-side in-memory storage
 
+Session will only be enabled if it's configurations exists in the `application.json` file.
+The session mechanism works by recovering the Session ID from a client sent header. The default
+header is `X-Session-ID`, but it can be changed in the `application.json` file.
+
+This header will be sent back to the user on every response if Session is enabled. Also, the
+session ID will be automatically generated and sent to a client if this client does not provide
+a session id in the HTTP request.
+
 ```ruby
 m.get('/login') do |context|
   # Authenticate user
@@ -128,8 +136,6 @@ m.get('/dashboard') do |context|
   end
 end
 ```
-
-**Caution: This feature is vulnerable to IP spoofing and may disrupt sessions on devices sharing the same network (e.g., Wi-Fi).**
 
 ### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
 
@@ -155,6 +161,10 @@ end
       "key_type": "EC",
       "cert_file_name": "path/to/cert/file/file.crt",
       "key_file_name": "path/to/cert/key/file.key"
+    },
+    "session": {
+      "secure_header": "X-Session-ID",
+      "invalidation_time": 3600
     }
   }
 }

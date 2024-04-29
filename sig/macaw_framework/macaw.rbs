@@ -13,6 +13,8 @@ module MacawFramework
     @secure_header: String
     @server: untyped
 
+    @server_class: untyped
+    @session: bool
     @threads: Integer
 
     attr_accessor bind: String

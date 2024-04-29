@@ -44,13 +44,13 @@ module ServerBase
     raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
     client_data = get_client_data(body, headers, parameters)
-    session_id = declare_client_session(client_data[:headers], @macaw.secure_header)
+    session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
 
     @macaw_log&.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
                                                       method_name, client_data, session_id, client.peeraddr[3])
     response_headers ||= {}
-    response_headers[@macaw.secure_header] = session_id
+    response_headers[@macaw.secure_header] = session_id if @macaw.session
     status ||= 200
     message ||= nil
     response_headers ||= nil
@@ -127,7 +127,7 @@ module ServerBase
   def set_features
     @is_shutting_down = false
     set_rate_limiting
-    set_session
+    set_session if @macaw.session
     set_ssl
   end
 end
