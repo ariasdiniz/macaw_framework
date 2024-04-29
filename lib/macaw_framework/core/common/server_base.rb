@@ -8,6 +8,7 @@ require_relative "../../utils/supported_ssl_versions"
 require_relative "../../aspects/prometheus_aspect"
 require_relative "../../aspects/logging_aspect"
 require_relative "../../aspects/cache_aspect"
+require "securerandom"
 
 ##
 # Base module for Server classes. It contains
@@ -21,14 +22,14 @@ module ServerBase
 
   private
 
-  def call_endpoint(name, client_data, client_ip)
+  def call_endpoint(name, client_data, session_id, _client_ip)
     @macaw.send(
       name.to_sym,
       {
         headers: client_data[:headers],
         body: client_data[:body],
         params: client_data[:params],
-        client: @session[client_ip][0]
+        client: @session[session_id][0]
       }
     )
   end
@@ -42,12 +43,14 @@ module ServerBase
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
     raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
-    declare_client_session(client)
     client_data = get_client_data(body, headers, parameters)
+    session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
 
     @macaw_log&.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
-                                                      method_name, client_data, client.peeraddr[3])
+                                                      method_name, client_data, session_id, client.peeraddr[3])
+    response_headers ||= {}
+    response_headers[@macaw.secure_header] = session_id if @macaw.session
     status ||= 200
     message ||= nil
     response_headers ||= nil
@@ -69,9 +72,11 @@ module ServerBase
     end
   end
 
-  def declare_client_session(client)
-    @session[client.peeraddr[3]] ||= [{}, Time.now]
-    @session[client.peeraddr[3]] = [{}, Time.now] if @session[client.peeraddr[3]][0].nil?
+  def declare_client_session(headers, secure_header_name)
+    session_id = headers[secure_header_name] || SecureRandom.uuid
+    session_id = SecureRandom.uuid if @session[session_id].nil?
+    @session[session_id] ||= [{}, Time.now]
+    session_id
   end
 
   def set_rate_limiting
@@ -110,7 +115,7 @@ module ServerBase
   end
 
   def set_session
-    @session = {}
+    @session ||= {}
     inv = if @macaw.config&.dig("macaw", "session", "invalidation_time")
             MemoryInvalidationMiddleware.new(@macaw.config["macaw"]["session"]["invalidation_time"])
           else
@@ -122,7 +127,7 @@ module ServerBase
   def set_features
     @is_shutting_down = false
     set_rate_limiting
-    set_session
+    set_session if @macaw.session
     set_ssl
   end
 end

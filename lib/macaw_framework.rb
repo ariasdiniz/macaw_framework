@@ -19,7 +19,7 @@ module MacawFramework
   # Class responsible for creating endpoints and
   # starting the web server.
   class Macaw
-    attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods
+    attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods, :secure_header, :session
     attr_accessor :port, :bind, :threads
 
     ##
@@ -28,23 +28,7 @@ module MacawFramework
     # @param {ThreadServer} server
     # @param {String?} dir
     def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: nil)
-      begin
-        @routes = []
-        @cached_methods = {}
-        @macaw_log ||= custom_log
-        @config = JSON.parse(File.read("application.json"))
-        @port = @config["macaw"]["port"] || 8080
-        @bind = @config["macaw"]["bind"] || "localhost"
-        @threads = @config["macaw"]["threads"] || 200
-        unless @config["macaw"]["cache"].nil?
-          @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
-        end
-        @prometheus = Prometheus::Client::Registry.new if @config["macaw"]["prometheus"]
-        @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
-        @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
-      rescue StandardError => e
-        @macaw_log&.warn(e.message)
-      end
+      apply_options(custom_log)
       create_endpoint_public_files(dir)
       @port ||= 8080
       @bind ||= "localhost"
@@ -192,6 +176,29 @@ module MacawFramework
     end
 
     private
+
+    def apply_options(custom_log)
+      @routes = []
+      @cached_methods = {}
+      @macaw_log ||= custom_log
+      @config = JSON.parse(File.read("application.json"))
+      @port = @config["macaw"]["port"] || 8080
+      @bind = @config["macaw"]["bind"] || "localhost"
+      @session = false
+      unless @config["macaw"]["session"].nil?
+        @session = true
+        @secure_header = @config["macaw"]["session"]["secure_header"] || "X-Session-ID"
+      end
+      @threads = @config["macaw"]["threads"] || 200
+      unless @config["macaw"]["cache"].nil?
+        @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
+      end
+      @prometheus = Prometheus::Client::Registry.new if @config["macaw"]["prometheus"]
+      @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
+      @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
+    rescue StandardError => e
+      @macaw_log&.warn(e.message)
+    end
 
     def server_loop(server)
       server.run
