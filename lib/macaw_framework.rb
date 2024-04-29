@@ -184,9 +184,9 @@ module MacawFramework
       @config = JSON.parse(File.read("application.json"))
       @port = @config["macaw"]["port"] || 8080
       @bind = @config["macaw"]["bind"] || "localhost"
-      @session = true
+      @session = false
       unless @config["macaw"]["session"].nil?
-        @session = false
+        @session = true
         @secure_header = @config["macaw"]["session"]["secure_header"] || "X-Session-ID"
       end
       @threads = @config["macaw"]["threads"] || 200

@@ -119,7 +119,8 @@ header is `X-Session-ID`, but it can be changed in the `application.json` file.
 
 This header will be sent back to the user on every response if Session is enabled. Also, the
 session ID will be automatically generated and sent to a client if this client does not provide
-a session id in the HTTP request.
+a session id in the HTTP request. In the case of the client sending an ID of an expired session
+the framework will return a new session with a new ID.
 
 ```ruby
 m.get('/login') do |context|
