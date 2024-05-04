@@ -136,3 +136,10 @@
 ## [1.2.6]
 
 - Improving session strategy and fixing vulnerabilities on it.
+
+## [1.3.0]
+- Improvements to cache usability
+- Improving session strategy and fixing vulnerabilities on it
+- Fixed a bug where errors were being logged with level INFO
+- Improved error stack trace
+
