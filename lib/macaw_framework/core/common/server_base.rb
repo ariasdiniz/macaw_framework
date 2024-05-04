@@ -63,7 +63,7 @@ module ServerBase
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
   rescue StandardError => e
     client.print "HTTP/1.1 500 Internal Server Error\r\n\r\n"
-    @macaw_log&.info("Error: #{e}")
+    @macaw_log&.error(e.full_message)
   ensure
     begin
       client.close
