@@ -18,7 +18,7 @@ provides developers with the essential tools to quickly build and deploy their a
         + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-rate-limiting-ssl-support-and-prometheus-integration)
         + [Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support](#monitoring-easily-monitor-your-application-performance-and-metrics-with-built-in-prometheus-support)
         + [Routing for "public" Folder: Serve Static Assets](#routing-for-public-folder-serve-static-assets)
-        + [Cron Jobs](#cron-jobs)
+        + [Periodic Jobs](#periodic-jobs)
         + [Tips](#tips)
     * [Contributing](#contributing)
     * [License](#license)
@@ -104,6 +104,8 @@ m.start!
 ### Caching: Improve performance by caching responses and configuring cache invalidation
 
 ```ruby
+m = MacawFramework::Macaw.new
+
 m.get('/cached_data', cache: ["header_to_cache", "query_param_to_cache"]) do |context|
   # Retrieve data
 end
@@ -123,6 +125,8 @@ a session id in the HTTP request. In the case of the client sending an ID of an 
 the framework will return a new session with a new ID.
 
 ```ruby
+m = MacawFramework::Macaw.new
+
 m.get('/login') do |context|
   # Authenticate user
   context[:client][:user_id] = user_id
@@ -195,17 +199,19 @@ be accessible at http://yourdomain.com/img/logo.png without any additional confi
 
 #### Caution: This is incompatible with most non-unix systems, such as Windows. If you are using a non-unix system, you will need to manually configure the "public" folder and use dir as nil to avoid problems.
 
-### Cron Jobs
+### Periodic Jobs
 
-Macaw Framework supports the declaration of cron jobs right in your application code. This feature allows developers to
+Macaw Framework supports the declaration of periodic jobs right in your application code. This feature allows developers to
 define tasks that run at set intervals, starting after an optional delay. Each job runs in a separate thread, meaning
-your cron jobs can execute in parallel without blocking the rest of your application.
+your periodic jobs can execute in parallel without blocking the rest of your application.
 
-Here's an example of how to declare a cron job:
+Here's an example of how to declare a periodic job:
 
 ```ruby
+m = MacawFramework::Macaw.new
+
 m.setup_job(interval: 5, start_delay: 5, job_name: "cron job 1") do
-  puts "i'm a cron job that runs every 5 secs!"
+  puts "i'm a periodic job that runs every 5 secs!"
 end
 ```
 

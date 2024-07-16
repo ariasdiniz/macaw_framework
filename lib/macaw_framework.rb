@@ -45,12 +45,13 @@ module MacawFramework
     # with the respective path.
     # @param {String} path
     # @param {Proc} block
-    # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.get("/hello") do |context|
-    #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
-    # end
+    # @example
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.get("/hello") do |context|
+    #     return "Hello World!", 200, { "Content-Type" => "text/plain" }
+    #   end
+    ##
     def get(path, cache: [], &block)
       map_new_endpoint("get", cache, path, &block)
     end
@@ -63,10 +64,11 @@ module MacawFramework
     # @param {Proc} block
     # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.post("/hello") do |context|
-    #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
-    # end
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.post("/hello") do |context|
+    #     return "Hello World!", 200, { "Content-Type" => "text/plain" }
+    #   end
+    ##
     def post(path, cache: [], &block)
       map_new_endpoint("post", cache, path, &block)
     end
@@ -78,10 +80,11 @@ module MacawFramework
     # @param {Proc} block
     # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.put("/hello") do |context|
-    #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
-    # end
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.put("/hello") do |context|
+    #     return "Hello World!", 200, { "Content-Type" => "text/plain" }
+    #   end
+    ##
     def put(path, cache: [], &block)
       map_new_endpoint("put", cache, path, &block)
     end
@@ -93,10 +96,11 @@ module MacawFramework
     # @param {Proc} block
     # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.patch("/hello") do |context|
-    #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
-    # end
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.patch("/hello") do |context|
+    #     return "Hello World!", 200, { "Content-Type" => "text/plain" }
+    #   end
+    ##
     def patch(path, cache: [], &block)
       map_new_endpoint("patch", cache, path, &block)
     end
@@ -108,26 +112,28 @@ module MacawFramework
     # @param {Proc} block
     # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.delete("/hello") do |context|
-    #   return "Hello World!", 200, { "Content-Type" => "text/plain" }
-    # end
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.delete("/hello") do |context|
+    #     return "Hello World!", 200, { "Content-Type" => "text/plain" }
+    #   end
+    ##
     def delete(path, cache: [], &block)
       map_new_endpoint("delete", cache, path, &block)
     end
 
     ##
-    # Spawn and start a thread running the defined cron job.
+    # Spawn and start a thread running the defined periodic job.
     # @param {Integer} interval
     # @param {Integer?} start_delay
     # @param {String} job_name
     # @param {Proc} block
     # @example
     #
-    # macaw = MacawFramework::Macaw.new
-    # macaw.setup_job(interval: 60, start_delay: 60, job_name: "job 1") do
-    #   puts "I'm a cron job that runs every minute"
-    # end
+    #   macaw = MacawFramework::Macaw.new
+    #   macaw.setup_job(interval: 60, start_delay: 60, job_name: "job 1") do
+    #     puts "I'm a periodic job that runs every minute"
+    #   end
+    ##
     def setup_job(interval: 60, start_delay: 0, job_name: "job_#{SecureRandom.uuid}", &block)
       @cron_runner ||= CronRunner.new(self)
       @jobs ||= []
