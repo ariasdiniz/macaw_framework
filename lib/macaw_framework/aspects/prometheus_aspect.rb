@@ -13,7 +13,7 @@ module PrometheusAspect
     ensure
       duration = (Time.now - start_time) * 1_000
 
-      endpoint_name = args[2].split(".").join("/")
+      endpoint_name = args[2].split('.').join('/')
 
       prometheus_middleware.request_duration_milliseconds.with_labels(endpoint: endpoint_name).observe(duration)
       prometheus_middleware.request_count.with_labels(endpoint: endpoint_name).increment

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative "../../middlewares/memory_invalidation_middleware"
-require_relative "../../middlewares/rate_limiter_middleware"
-require_relative "../../data_filters/response_data_filter"
-require_relative "../../errors/too_many_requests_error"
-require_relative "../../utils/supported_ssl_versions"
-require_relative "../../aspects/prometheus_aspect"
-require_relative "../../aspects/logging_aspect"
-require_relative "../../aspects/cache_aspect"
-require "securerandom"
+require_relative '../../middlewares/memory_invalidation_middleware'
+require_relative '../../middlewares/rate_limiter_middleware'
+require_relative '../../data_filters/response_data_filter'
+require_relative '../../errors/too_many_requests_error'
+require_relative '../../utils/supported_ssl_versions'
+require_relative '../../aspects/prometheus_aspect'
+require_relative '../../aspects/logging_aspect'
+require_relative '../../aspects/cache_aspect'
+require 'securerandom'
 
 ##
 # Base module for Server classes. It contains
@@ -46,7 +46,7 @@ module ServerBase
     client_data = get_client_data(body, headers, parameters)
     session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
 
-    @macaw_log&.info("Running #{path.gsub("\n", "").gsub("\r", "")}")
+    @macaw_log&.info("Running #{path.gsub("\n", '').gsub("\r", '')}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
                                                       method_name, client_data, session_id, client.peeraddr[3])
     response_headers ||= {}
@@ -80,44 +80,44 @@ module ServerBase
   end
 
   def set_rate_limiting
-    return unless @macaw.config&.dig("macaw", "rate_limiting")
+    return unless @macaw.config&.dig('macaw', 'rate_limiting')
 
     @rate_limit = RateLimiterMiddleware.new(
-      @macaw.config["macaw"]["rate_limiting"]["window"].to_i || 1,
-      @macaw.config["macaw"]["rate_limiting"]["max_requests"].to_i || 60
+      @macaw.config['macaw']['rate_limiting']['window'].to_i || 1,
+      @macaw.config['macaw']['rate_limiting']['max_requests'].to_i || 60
     )
   end
 
   def set_ssl
-    ssl_config = @macaw.config["macaw"]["ssl"] if @macaw.config&.dig("macaw", "ssl")
+    ssl_config = @macaw.config['macaw']['ssl'] if @macaw.config&.dig('macaw', 'ssl')
     ssl_config ||= nil
     unless ssl_config.nil?
-      version_config = { min: ssl_config["min"], max: ssl_config["max"] }
+      version_config = { min: ssl_config['min'], max: ssl_config['max'] }
       @context = OpenSSL::SSL::SSLContext.new
       @context.min_version = SupportedSSLVersions::VERSIONS[version_config[:min]] unless version_config[:min].nil?
       @context.max_version = SupportedSSLVersions::VERSIONS[version_config[:max]] unless version_config[:max].nil?
-      @context.cert = OpenSSL::X509::Certificate.new(File.read(ssl_config["cert_file_name"]))
+      @context.cert = OpenSSL::X509::Certificate.new(File.read(ssl_config['cert_file_name']))
 
-      if ssl_config["key_type"] == "RSA" || ssl_config["key_type"].nil?
-        @context.key = OpenSSL::PKey::RSA.new(File.read(ssl_config["key_file_name"]))
-      elsif ssl_config["key_type"] == "EC"
-        @context.key = OpenSSL::PKey::EC.new(File.read(ssl_config["key_file_name"]))
+      if ssl_config['key_type'] == 'RSA' || ssl_config['key_type'].nil?
+        @context.key = OpenSSL::PKey::RSA.new(File.read(ssl_config['key_file_name']))
+      elsif ssl_config['key_type'] == 'EC'
+        @context.key = OpenSSL::PKey::EC.new(File.read(ssl_config['key_file_name']))
       else
-        raise ArgumentError, "Unsupported SSL/TLS key type: #{ssl_config["key_type"]}"
+        raise ArgumentError, "Unsupported SSL/TLS key type: #{ssl_config['key_type']}"
       end
     end
     @context ||= nil
   rescue IOError => e
-    @macaw_log&.error("It was not possible to read files #{@macaw.config["macaw"]["ssl"]["cert_file_name"]} and
-#{@macaw.config["macaw"]["ssl"]["key_file_name"]}. Please assure the files exist and their names are correct.")
+    @macaw_log&.error("It was not possible to read files #{@macaw.config['macaw']['ssl']['cert_file_name']} and
+#{@macaw.config['macaw']['ssl']['key_file_name']}. Please assure the files exist and their names are correct.")
     @macaw_log&.error(e.backtrace)
     raise e
   end
 
   def set_session
     @session ||= {}
-    inv = if @macaw.config&.dig("macaw", "session", "invalidation_time")
-            MemoryInvalidationMiddleware.new(@macaw.config["macaw"]["session"]["invalidation_time"])
+    inv = if @macaw.config&.dig('macaw', 'session', 'invalidation_time')
+            MemoryInvalidationMiddleware.new(@macaw.config['macaw']['session']['invalidation_time'])
           else
             MemoryInvalidationMiddleware.new
           end

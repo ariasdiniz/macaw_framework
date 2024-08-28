@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-require_relative "lib/macaw_framework/version"
+require_relative 'lib/macaw_framework/version'
 
 Gem::Specification.new do |spec|
-  spec.name = "macaw_framework"
+  spec.name = 'macaw_framework'
   spec.version = MacawFramework::VERSION
-  spec.authors = ["Aria Diniz"]
-  spec.email = ["aria.diniz.dev@gmail.com"]
+  spec.authors = ['Aria Diniz']
+  spec.email = ['aria.diniz.dev@gmail.com']
 
-  spec.summary = "A lightweight back-end web framework"
+  spec.summary = 'A lightweight back-end web framework'
   spec.description = "A lightweight web framework designed for building efficient backend applications. Initially
 created for study purposes, now production-ready and open for contributions."
-  spec.homepage = "https://github.com/ariasdiniz/macaw_framework"
-  spec.license = "MIT"
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.homepage = 'https://github.com/ariasdiniz/macaw_framework'
+  spec.license = 'MIT'
+  spec.required_ruby_version = '>= 2.7.0'
 
-  spec.metadata["documentation_uri"] = "https://rubydoc.info/gems/macaw_framework"
-  spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/ariasdiniz/macaw_framework"
+  spec.metadata['documentation_uri'] = 'https://rubydoc.info/gems/macaw_framework'
+  spec.metadata['homepage_uri'] = spec.homepage
+  spec.metadata['source_code_uri'] = 'https://github.com/ariasdiniz/macaw_framework'
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
 
   # Specify which files should be added to the gem when it is released.
@@ -27,11 +27,11 @@ created for study purposes, now production-ready and open for contributions."
       (f == __FILE__) || f.match(%r{\A(?:(?:bin|test|spec|features)/|\.(?:git|travis|circleci)|appveyor)})
     end
   end
-  spec.bindir = "exe"
+  spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  spec.require_paths = ['lib']
 
-  spec.add_dependency "prometheus-client", "~> 4.1"
+  spec.add_dependency 'prometheus-client', '~> 4.1'
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"

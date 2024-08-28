@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require "test_helper"
-require_relative "../lib/macaw_framework/middlewares/rate_limiter_middleware"
+require 'test_helper'
+require_relative '../lib/macaw_framework/middlewares/rate_limiter_middleware'
 
 class TestRateLimiterMiddleware < Minitest::Test
   def setup
     @window_size = 10
     @max_requests = 5
     @rate_limiter = RateLimiterMiddleware.new(@window_size, @max_requests)
-    @client_id = "127.0.0.1"
+    @client_id = '127.0.0.1'
   end
 
   def test_allow_within_limits
@@ -29,7 +29,7 @@ class TestRateLimiterMiddleware < Minitest::Test
   end
 
   def test_allow_different_clients
-    client_id2 = "127.0.0.2"
+    client_id2 = '127.0.0.2'
     @max_requests.times do
       assert_equal true, @rate_limiter.allow?(@client_id)
       assert_equal true, @rate_limiter.allow?(client_id2)

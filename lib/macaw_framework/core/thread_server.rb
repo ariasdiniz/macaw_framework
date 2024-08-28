@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "common/server_base"
-require "openssl"
+require_relative 'common/server_base'
+require 'openssl'
 
 ##
 # Class responsible for providing a default
