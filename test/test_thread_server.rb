@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require "logger"
-require "socket"
-require "net/http"
-require "openssl"
-require_relative "test_helper"
-require_relative "../lib/macaw_framework/aspects/logging_aspect"
-require_relative "../lib/macaw_framework/utils/http_status_code"
-require_relative "../lib/macaw_framework/data_filters/request_data_filtering"
-require_relative "../lib/macaw_framework/errors/endpoint_not_mapped_error"
-require_relative "../lib/macaw_framework/errors/too_many_requests_error"
+require 'logger'
+require 'socket'
+require 'net/http'
+require 'openssl'
+require_relative 'test_helper'
+require_relative '../lib/macaw_framework/aspects/logging_aspect'
+require_relative '../lib/macaw_framework/utils/http_status_code'
+require_relative '../lib/macaw_framework/data_filters/request_data_filtering'
+require_relative '../lib/macaw_framework/errors/endpoint_not_mapped_error'
+require_relative '../lib/macaw_framework/errors/too_many_requests_error'
 
 class TestEndpoint
   attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header, :session
@@ -18,22 +18,22 @@ class TestEndpoint
   def initialize
     @routes = %w[get.hello get.ok get.ise post.set_session get.get_session]
     @port = 9292
-    @bind = "localhost"
+    @bind = 'localhost'
     @threads = 1
     @macaw_log = nil
     @config = nil
     @cached_methods = []
-    @secure_header = "X-Session-ID"
+    @secure_header = 'X-Session-ID'
     @session = true
-    define_singleton_method("get.hello", ->(_context) { "Hello, World!" })
-    define_singleton_method("get.ok", ->(_context) { ["Ok", 200] })
-    define_singleton_method("get.ise", ->(_context) { raise StandardError, "Internal server error" })
-    @routes << "get.session"
-    define_singleton_method("post.set_session", lambda { |context|
+    define_singleton_method('get.hello', ->(_context) { 'Hello, World!' })
+    define_singleton_method('get.ok', ->(_context) { ['Ok', 200] })
+    define_singleton_method('get.ise', ->(_context) { raise StandardError, 'Internal server error' })
+    @routes << 'get.session'
+    define_singleton_method('post.set_session', lambda { |context|
                                                   context[:client][:value] = 42
-                                                  ["Session set", 200]
+                                                  ['Session set', 200]
                                                 })
-    define_singleton_method("get.get_session", ->(context) { "Session value: #{context[:client][:value]}" })
+    define_singleton_method('get.get_session', ->(context) { "Session value: #{context[:client][:value]}" })
   end
 
   def update_session(client_session)
@@ -64,7 +64,7 @@ class ServerTest < Minitest::Test
     @logger = Logger.new($stdout)
     @macaw = TestEndpoint.new
     @port = 9292
-    @bind = "localhost"
+    @bind = 'localhost'
     @num_threads = 4
     @server = ThreadServer.new(@macaw)
   end
@@ -139,7 +139,7 @@ class ServerTest < Minitest::Test
   end
 
   def test_rate_limiting
-    @macaw.config = { "macaw" => { "rate_limiting" => { "window" => 1, "max_requests" => 1 } } }
+    @macaw.config = { 'macaw' => { 'rate_limiting' => { 'window' => 1, 'max_requests' => 1 } } }
     @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
@@ -165,8 +165,8 @@ class ServerTest < Minitest::Test
   end
 
   def test_post_request
-    @macaw.routes << "post.hello"
-    @macaw.define_singleton_method("post.hello", ->(_context) { "Hello, POST!" })
+    @macaw.routes << 'post.hello'
+    @macaw.define_singleton_method('post.hello', ->(_context) { 'Hello, POST!' })
 
     server_thread = Thread.new { @server.run }
 
@@ -185,10 +185,10 @@ class ServerTest < Minitest::Test
 
   def test_ssl_feature
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "cert_file_name" => "./test/data/test_cert.pem",
-          "key_file_name" => "./test/data/test_key.pem"
+      'macaw' => {
+        'ssl' => {
+          'cert_file_name' => './test/data/test_cert.pem',
+          'key_file_name' => './test/data/test_key.pem'
         }
       }
     }
@@ -201,10 +201,10 @@ class ServerTest < Minitest::Test
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-    request = Net::HTTP::Get.new("/hello")
+    request = Net::HTTP::Get.new('/hello')
     response = http.request(request)
 
-    assert_equal "200", response.code
+    assert_equal '200', response.code
     assert_match(/Hello, World!/, response.body)
 
     @server.close
@@ -212,7 +212,7 @@ class ServerTest < Minitest::Test
   end
 
   def test_session
-    @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 30 } } }
+    @macaw.config = { 'macaw' => { 'session' => { 'invalidation_time' => 30 } } }
     @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
@@ -222,7 +222,7 @@ class ServerTest < Minitest::Test
     client1 = TCPSocket.new(@bind, @port)
     client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
     response1 = client1.read
-    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(": ")[1]
+    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
     client1.close
 
     assert_match(/Session set/, response1)
@@ -240,7 +240,7 @@ class ServerTest < Minitest::Test
   end
 
   def test_session_invalidation
-    @macaw.config = { "macaw" => { "session" => { "invalidation_time" => 2 } } }
+    @macaw.config = { 'macaw' => { 'session' => { 'invalidation_time' => 2 } } }
     @server = ThreadServer.new(@macaw)
 
     server_thread = Thread.new { @server.run }
@@ -249,7 +249,7 @@ class ServerTest < Minitest::Test
     client1 = TCPSocket.new(@bind, @port)
     client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
     response1 = client1.read
-    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(": ")[1]
+    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
     client1.close
 
     assert_match(/Session set/, response1)
@@ -277,10 +277,10 @@ class ServerTest < Minitest::Test
 
   def test_ssl_config_with_ssl_no_min_max
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "cert_file_name" => "./test/data/test_cert.pem",
-          "key_file_name" => "./test/data/test_key.pem"
+      'macaw' => {
+        'ssl' => {
+          'cert_file_name' => './test/data/test_cert.pem',
+          'key_file_name' => './test/data/test_key.pem'
         }
       }
     }
@@ -291,12 +291,12 @@ class ServerTest < Minitest::Test
 
   def test_ssl_config_with_ssl_values
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "min" => "SSL3",
-          "max" => "TLS1.1",
-          "cert_file_name" => "./test/data/test_cert.pem",
-          "key_file_name" => "./test/data/test_key.pem"
+      'macaw' => {
+        'ssl' => {
+          'min' => 'SSL3',
+          'max' => 'TLS1.1',
+          'cert_file_name' => './test/data/test_cert.pem',
+          'key_file_name' => './test/data/test_key.pem'
         }
       }
     }
@@ -317,10 +317,10 @@ class ServerTest < Minitest::Test
 
   def test_ssl_config_with_missing_files
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "cert_file_name" => "./test/data/non_existent_cert.pem",
-          "key_file_name" => "./test/data/non_existent_key.pem"
+      'macaw' => {
+        'ssl' => {
+          'cert_file_name' => './test/data/non_existent_cert.pem',
+          'key_file_name' => './test/data/non_existent_key.pem'
         }
       }
     }
@@ -331,8 +331,8 @@ class ServerTest < Minitest::Test
   end
 
   def test_data_filtering
-    @macaw.routes << "post.test_filter"
-    @macaw.define_singleton_method("post.test_filter", ->(context) { context[:body] })
+    @macaw.routes << 'post.test_filter'
+    @macaw.define_singleton_method('post.test_filter', ->(context) { context[:body] })
 
     server_thread = Thread.new { @server.run }
     sleep(0.1)
@@ -350,11 +350,11 @@ class ServerTest < Minitest::Test
 
   def test_ssl_config_with_ecdsa_key
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "key_type" => "EC",
-          "cert_file_name" => "./test/data/ec_cert.crt",
-          "key_file_name" => "./test/data/ec_key.key"
+      'macaw' => {
+        'ssl' => {
+          'key_type' => 'EC',
+          'cert_file_name' => './test/data/ec_cert.crt',
+          'key_file_name' => './test/data/ec_key.key'
         }
       }
     }
@@ -367,10 +367,10 @@ class ServerTest < Minitest::Test
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-    request = Net::HTTP::Get.new("/hello")
+    request = Net::HTTP::Get.new('/hello')
     response = http.request(request)
 
-    assert_equal "200", response.code
+    assert_equal '200', response.code
     assert_match(/Hello, World!/, response.body)
 
     @server.close
@@ -379,11 +379,11 @@ class ServerTest < Minitest::Test
 
   def test_invalid_ssl_key_type
     @macaw.config = {
-      "macaw" => {
-        "ssl" => {
-          "key_type" => "INVALID",
-          "cert_file_name" => "./test/data/test_cert.pem",
-          "key_file_name" => "./test/data/test_key.pem"
+      'macaw' => {
+        'ssl' => {
+          'key_type' => 'INVALID',
+          'cert_file_name' => './test/data/test_cert.pem',
+          'key_file_name' => './test/data/test_key.pem'
         }
       }
     }
@@ -419,8 +419,8 @@ class ServerTest < Minitest::Test
   end
 
   def test_special_character_request_path
-    @macaw.routes << "get.hello%24world"
-    @macaw.define_singleton_method("get.hello%24world", ->(_context) { "Hello, World!" })
+    @macaw.routes << 'get.hello%24world'
+    @macaw.define_singleton_method('get.hello%24world', ->(_context) { 'Hello, World!' })
 
     server_thread = Thread.new { @server.run }
 

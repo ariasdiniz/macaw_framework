@@ -3,14 +3,6 @@ AllCops:
   SuggestExtensions: false
   NewCops: disable
 
-Style/StringLiterals:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-Style/StringLiteralsInInterpolation:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
 Layout/LineLength:
   Max: 120
 

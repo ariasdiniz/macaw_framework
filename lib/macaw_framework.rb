@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require_relative "macaw_framework/errors/endpoint_not_mapped_error"
-require_relative "macaw_framework/middlewares/prometheus_middleware"
-require_relative "macaw_framework/data_filters/request_data_filtering"
-require_relative "macaw_framework/middlewares/memory_invalidation_middleware"
-require_relative "macaw_framework/core/cron_runner"
-require_relative "macaw_framework/core/thread_server"
-require_relative "macaw_framework/version"
-require "prometheus/client"
-require "securerandom"
-require "pathname"
-require "logger"
-require "socket"
-require "json"
+require_relative 'macaw_framework/errors/endpoint_not_mapped_error'
+require_relative 'macaw_framework/middlewares/prometheus_middleware'
+require_relative 'macaw_framework/data_filters/request_data_filtering'
+require_relative 'macaw_framework/middlewares/memory_invalidation_middleware'
+require_relative 'macaw_framework/core/cron_runner'
+require_relative 'macaw_framework/core/thread_server'
+require_relative 'macaw_framework/version'
+require 'prometheus/client'
+require 'securerandom'
+require 'pathname'
+require 'logger'
+require 'socket'
+require 'json'
 
 module MacawFramework
   ##
@@ -31,7 +31,7 @@ module MacawFramework
       apply_options(custom_log)
       create_endpoint_public_files(dir)
       @port ||= 8080
-      @bind ||= "localhost"
+      @bind ||= 'localhost'
       @config ||= nil
       @threads ||= 200
       @endpoints_to_cache = []
@@ -53,7 +53,7 @@ module MacawFramework
     #   end
     ##
     def get(path, cache: [], &block)
-      map_new_endpoint("get", cache, path, &block)
+      map_new_endpoint('get', cache, path, &block)
     end
 
     ##
@@ -70,7 +70,7 @@ module MacawFramework
     #   end
     ##
     def post(path, cache: [], &block)
-      map_new_endpoint("post", cache, path, &block)
+      map_new_endpoint('post', cache, path, &block)
     end
 
     ##
@@ -86,7 +86,7 @@ module MacawFramework
     #   end
     ##
     def put(path, cache: [], &block)
-      map_new_endpoint("put", cache, path, &block)
+      map_new_endpoint('put', cache, path, &block)
     end
 
     ##
@@ -102,7 +102,7 @@ module MacawFramework
     #   end
     ##
     def patch(path, cache: [], &block)
-      map_new_endpoint("patch", cache, path, &block)
+      map_new_endpoint('patch', cache, path, &block)
     end
 
     ##
@@ -118,7 +118,7 @@ module MacawFramework
     #   end
     ##
     def delete(path, cache: [], &block)
-      map_new_endpoint("delete", cache, path, &block)
+      map_new_endpoint('delete', cache, path, &block)
     end
 
     ##
@@ -145,27 +145,27 @@ module MacawFramework
     # Starts the web server
     def start!
       if @macaw_log.nil?
-        puts("---------------------------------")
+        puts('---------------------------------')
         puts("Starting server at port #{@port}")
         puts("Number of threads: #{@threads}")
-        puts("---------------------------------")
+        puts('---------------------------------')
       else
-        @macaw_log.info("---------------------------------")
+        @macaw_log.info('---------------------------------')
         @macaw_log.info("Starting server at port #{@port}")
         @macaw_log.info("Number of threads: #{@threads}")
-        @macaw_log.info("---------------------------------")
+        @macaw_log.info('---------------------------------')
       end
       @server = @server_class.new(self, @endpoints_to_cache, @cache, @prometheus, @prometheus_middleware)
       server_loop(@server)
     rescue Interrupt
       if @macaw_log.nil?
-        puts("Stopping server")
+        puts('Stopping server')
         @server.close
-        puts("Macaw stop flying for some seeds...")
+        puts('Macaw stop flying for some seeds...')
       else
-        @macaw_log.info("Stopping server")
+        @macaw_log.info('Stopping server')
         @server.close
-        @macaw_log.info("Macaw stop flying for some seeds...")
+        @macaw_log.info('Macaw stop flying for some seeds...')
       end
     end
 
@@ -175,10 +175,10 @@ module MacawFramework
     # you just want to keep cron jobs running, without
     # mapping any HTTP endpoints.
     def start_without_server!
-      @macaw_log.nil? ? puts("Application starting") : @macaw_log.info("Application starting")
+      @macaw_log.nil? ? puts('Application starting') : @macaw_log.info('Application starting')
       loop { sleep(3600) }
     rescue Interrupt
-      @macaw_log.nil? ? puts("Macaw stop flying for some seeds.") : @macaw_log.info("Macaw stop flying for some seeds.")
+      @macaw_log.nil? ? puts('Macaw stop flying for some seeds.') : @macaw_log.info('Macaw stop flying for some seeds.')
     end
 
     private
@@ -187,21 +187,21 @@ module MacawFramework
       @routes = []
       @cached_methods = {}
       @macaw_log ||= custom_log
-      @config = JSON.parse(File.read("application.json"))
-      @port = @config["macaw"]["port"] || 8080
-      @bind = @config["macaw"]["bind"] || "localhost"
+      @config = JSON.parse(File.read('application.json'))
+      @port = @config['macaw']['port'] || 8080
+      @bind = @config['macaw']['bind'] || 'localhost'
       @session = false
-      unless @config["macaw"]["session"].nil?
+      unless @config['macaw']['session'].nil?
         @session = true
-        @secure_header = @config["macaw"]["session"]["secure_header"] || "X-Session-ID"
+        @secure_header = @config['macaw']['session']['secure_header'] || 'X-Session-ID'
       end
-      @threads = @config["macaw"]["threads"] || 200
-      unless @config["macaw"]["cache"].nil?
-        @cache = MemoryInvalidationMiddleware.new(@config["macaw"]["cache"]["cache_invalidation"].to_i || 3_600)
+      @threads = @config['macaw']['threads'] || 200
+      unless @config['macaw']['cache'].nil?
+        @cache = MemoryInvalidationMiddleware.new(@config['macaw']['cache']['cache_invalidation'].to_i || 3_600)
       end
-      @prometheus = Prometheus::Client::Registry.new if @config["macaw"]["prometheus"]
-      @prometheus_middleware = PrometheusMiddleware.new if @config["macaw"]["prometheus"]
-      @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config["macaw"]["prometheus"]
+      @prometheus = Prometheus::Client::Registry.new if @config['macaw']['prometheus']
+      @prometheus_middleware = PrometheusMiddleware.new if @config['macaw']['prometheus']
+      @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config['macaw']['prometheus']
     rescue StandardError => e
       @macaw_log&.warn(e.message)
     end
@@ -214,10 +214,10 @@ module MacawFramework
       @endpoints_to_cache << "#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}" unless cache.empty?
       @cached_methods["#{prefix}.#{RequestDataFiltering.sanitize_method_name(path)}"] = cache unless cache.empty?
       path_clean = RequestDataFiltering.extract_path(path)
-      slash = path[0] == "/" ? "" : "/"
+      slash = path[0] == '/' ? '' : '/'
       @macaw_log&.info("Defining #{prefix.upcase} endpoint at #{slash}#{path}")
       define_singleton_method("#{prefix}.#{path_clean}", block || lambda {
-        |context = { headers: {}, body: "", params: {} }|
+        |context = { headers: {}, body: '', params: {} }|
       })
       @routes << "#{prefix}.#{path_clean}"
     end
@@ -225,8 +225,8 @@ module MacawFramework
     def get_files_public_folder(dir)
       return [] if dir.nil?
 
-      folder_path = Pathname.new(File.expand_path("public", dir))
-      file_paths = folder_path.glob("**/*").select(&:file?)
+      folder_path = Pathname.new(File.expand_path('public', dir))
+      file_paths = folder_path.glob('**/*').select(&:file?)
       file_paths.map { |path| "public/#{path.relative_path_from(folder_path)}" }
     end
 

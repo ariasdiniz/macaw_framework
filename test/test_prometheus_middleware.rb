@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "test_helper"
-require_relative "../lib/macaw_framework/middlewares/prometheus_middleware"
+require_relative 'test_helper'
+require_relative '../lib/macaw_framework/middlewares/prometheus_middleware'
 
 class MockPrometheusRegistry
   def register(metric); end
@@ -34,9 +34,9 @@ class TestPrometheusMiddleware < Minitest::Test
 
   def test_configurations
     {
-      "macaw" => {
-        "prometheus" => {
-          "endpoint" => "/test_metrics"
+      'macaw' => {
+        'prometheus' => {
+          'endpoint' => '/test_metrics'
         }
       }
     }

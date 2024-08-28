@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 
-require "json"
+require 'json'
 
 ##
 # Module responsible for sanitizing log data
@@ -10,7 +10,7 @@ module LogDataFilter
 
   def self.config
     @config ||= begin
-      file_path = "application.json"
+      file_path = 'application.json'
       config = {
         max_length: DEFAULT_MAX_LENGTH,
         sensitive_fields: DEFAULT_SENSITIVE_FIELDS
@@ -19,10 +19,10 @@ module LogDataFilter
       if File.exist?(file_path)
         json = JSON.parse(File.read(file_path))
 
-        if json["macaw"] && json["macaw"]["log"]
-          log_config = json["macaw"]["log"]
-          config[:max_length] = log_config["max_length"] if log_config["max_length"]
-          config[:sensitive_fields] = log_config["sensitive_fields"] if log_config["sensitive_fields"]
+        if json['macaw'] && json['macaw']['log']
+          log_config = json['macaw']['log']
+          config[:max_length] = log_config['max_length'] if log_config['max_length']
+          config[:sensitive_fields] = log_config['sensitive_fields'] if log_config['sensitive_fields']
         end
       end
 
@@ -31,11 +31,11 @@ module LogDataFilter
   end
 
   def self.sanitize_for_logging(data, sensitive_fields: config[:sensitive_fields])
-    return "" if data.nil?
+    return '' if data.nil?
 
-    data = data.to_s.force_encoding("UTF-8")
+    data = data.to_s.force_encoding('UTF-8')
     data = data.slice(0, config[:max_length])
-    data = data.gsub("\\", "")
+    data = data.gsub('\\', '')
 
     sensitive_fields.each do |field|
       next unless data.include?(field.to_s)

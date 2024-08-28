@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "test_helper"
-require_relative "../lib/macaw_framework/aspects/prometheus_aspect"
+require_relative 'test_helper'
+require_relative '../lib/macaw_framework/aspects/prometheus_aspect'
 
 class MockServer
   include PrometheusAspect
 
   def call_endpoint(_prometheus_middleware, *args)
-    endpoint_name = args[3].split(".").join("/")
+    endpoint_name = args[3].split('.').join('/')
     puts "Called endpoint: #{endpoint_name}"
     [nil, 200]
   end
@@ -38,7 +38,7 @@ class MockPrometheusMiddleware
     end
 
     def increment
-      puts "Counter incremented"
+      puts 'Counter incremented'
     end
   end
 end
@@ -48,8 +48,8 @@ class TestPrometheusAspect < Minitest::Test
     server = MockServer.new
     prometheus_middleware = MockPrometheusMiddleware.new
 
-    response = server.call_endpoint(prometheus_middleware, nil, nil, nil, "get.example")
+    response = server.call_endpoint(prometheus_middleware, nil, nil, nil, 'get.example')
 
-    assert_equal 200, response[1], "Expected status 200"
+    assert_equal 200, response[1], 'Expected status 200'
   end
 end

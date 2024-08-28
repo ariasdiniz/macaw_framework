@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../utils/http_status_code"
+require_relative '../utils/http_status_code'
 
 ##
 # Module responsible to filter and mount HTTP responses
@@ -19,9 +19,9 @@ module ResponseDataFilter
   end
 
   def self.mount_response_headers(headers)
-    return "" if headers.nil?
+    return '' if headers.nil?
 
-    response = ""
+    response = ''
     headers.each do |key, value|
       response += "#{key}: #{value}\r\n"
     end
