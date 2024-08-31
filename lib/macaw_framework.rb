@@ -9,6 +9,7 @@ require_relative 'macaw_framework/core/thread_server'
 require_relative 'macaw_framework/version'
 require 'prometheus/client'
 require 'securerandom'
+require 'singleton'
 require 'pathname'
 require 'logger'
 require 'socket'
@@ -30,13 +31,7 @@ module MacawFramework
     def initialize(custom_log: Logger.new($stdout), server: ThreadServer, dir: nil)
       apply_options(custom_log)
       create_endpoint_public_files(dir)
-      @port ||= 8080
-      @bind ||= 'localhost'
-      @config ||= nil
-      @threads ||= 200
-      @endpoints_to_cache = []
-      @prometheus ||= nil
-      @prometheus_middleware ||= nil
+      setup_default_configs
       @server_class = server
     end
 
@@ -183,27 +178,55 @@ module MacawFramework
 
     private
 
+    def setup_default_configs
+      @port ||= 8080
+      @bind ||= 'localhost'
+      @config ||= nil
+      @threads ||= 200
+      @endpoints_to_cache = []
+      @prometheus ||= nil
+      @prometheus_middleware ||= nil
+    end
+
     def apply_options(custom_log)
+      setup_basic_config(custom_log)
+      setup_session
+      setup_cache
+      setup_prometheus
+    rescue StandardError => e
+      @macaw_log&.warn(e.message)
+    end
+
+    def setup_cache
+      return if @config['macaw']['cache'].nil?
+
+      @cache = MemoryInvalidationMiddleware.new(@config['macaw']['cache']['cache_invalidation'].to_i || 3_600)
+    end
+
+    def setup_session
+      @session = false
+      return if @config['macaw']['session'].nil?
+
+      @session = true
+      @secure_header = @config['macaw']['session']['secure_header'] || 'X-Session-ID'
+    end
+
+    def setup_basic_config(custom_log)
       @routes = []
       @cached_methods = {}
       @macaw_log ||= custom_log
       @config = JSON.parse(File.read('application.json'))
       @port = @config['macaw']['port'] || 8080
       @bind = @config['macaw']['bind'] || 'localhost'
-      @session = false
-      unless @config['macaw']['session'].nil?
-        @session = true
-        @secure_header = @config['macaw']['session']['secure_header'] || 'X-Session-ID'
-      end
       @threads = @config['macaw']['threads'] || 200
-      unless @config['macaw']['cache'].nil?
-        @cache = MemoryInvalidationMiddleware.new(@config['macaw']['cache']['cache_invalidation'].to_i || 3_600)
-      end
-      @prometheus = Prometheus::Client::Registry.new if @config['macaw']['prometheus']
-      @prometheus_middleware = PrometheusMiddleware.new if @config['macaw']['prometheus']
-      @prometheus_middleware.configure_prometheus(@prometheus, @config, self) if @config['macaw']['prometheus']
-    rescue StandardError => e
-      @macaw_log&.warn(e.message)
+    end
+
+    def setup_prometheus
+      return unless @config['macaw']['prometheus']
+
+      @prometheus = Prometheus::Client::Registry.new
+      @prometheus_middleware = PrometheusMiddleware.new
+      @prometheus_middleware&.configure_prometheus(@prometheus, @config, self)
     end
 
     def server_loop(server)
@@ -233,6 +256,47 @@ module MacawFramework
     def create_endpoint_public_files(dir)
       get_files_public_folder(dir).each do |file|
         get(file) { |_context| return File.read(file).to_s, 200, {} }
+      end
+    end
+  end
+
+  class Cache
+    include Singleton
+
+    attr_accessor :invalidation_frequency
+
+    def write(tag, value, expires_in: 3600)
+      if read(tag).nil?
+        @mutex.synchronize do
+          @cache.store(tag, { value: value, expires_in: Time.now + expires_in })
+        end
+      else
+        @cache[tag][:value] = value
+        @cache[tag][:expires_in] = Time.now + expires_in
+      end
+    end
+
+    def read(tag) = @cache.dig(tag, :value)
+
+    private
+
+    def initialize
+      @cache = {}
+      @mutex = Mutex.new
+      @invalidation_frequency = 60
+      invalidate_cache
+    end
+
+    def invalidate_cache
+      @invalidator = Thread.new(&method(:invalidation_process))
+    end
+
+    def invalidation_process
+      loop do
+        sleep @invalidation_frequency
+        @mutex.synchronize do
+          @cache.delete_if { |_, v| v[:expires_in] < Time.now }
+        end
       end
     end
   end
