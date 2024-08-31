@@ -23,3 +23,9 @@ Metrics/PerceivedComplexity:
 
 Metrics/ClassLength:
   Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false

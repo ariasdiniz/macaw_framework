@@ -260,6 +260,9 @@ module MacawFramework
     end
   end
 
+  ##
+  # This singleton class allows to manually cache
+  # parameters and other data.
   class Cache
     include Singleton
 
