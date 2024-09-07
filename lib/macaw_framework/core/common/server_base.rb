@@ -29,7 +29,7 @@ module ServerBase
         headers: client_data[:headers],
         body: client_data[:body],
         params: client_data[:params],
-        client: @session[session_id][0]
+        client: @session&.dig(session_id)&.dig(0)
       }
     )
   end
