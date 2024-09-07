@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
   SuggestExtensions: false
   NewCops: disable
 
@@ -22,4 +22,10 @@ Metrics/PerceivedComplexity:
   Enabled: false
 
 Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
   Enabled: false

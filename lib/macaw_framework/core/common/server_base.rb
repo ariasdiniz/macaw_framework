@@ -29,7 +29,7 @@ module ServerBase
         headers: client_data[:headers],
         body: client_data[:body],
         params: client_data[:params],
-        client: @session[session_id][0]
+        client: @session&.dig(session_id)&.dig(0)
       }
     )
   end
@@ -115,6 +115,8 @@ module ServerBase
   end
 
   def set_session
+    return unless @macaw.session
+
     @session ||= {}
     inv = if @macaw.config&.dig('macaw', 'session', 'invalidation_time')
             MemoryInvalidationMiddleware.new(@macaw.config['macaw']['session']['invalidation_time'])
@@ -127,7 +129,7 @@ module ServerBase
   def set_features
     @is_shutting_down = false
     set_rate_limiting
-    set_session if @macaw.session
+    set_session
     set_ssl
   end
 end
