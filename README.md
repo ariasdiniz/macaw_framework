@@ -51,7 +51,7 @@ We evaluated MacawFramework (Version 1.2.0) to assess its ability to handle simu
 
 MacawFramework is built to be highly compatible, since it uses only native Ruby code:
 
-- **MRI**: MacawFramework is compatible with Matz's Ruby Interpreter (MRI), version 2.7.0 and onwards. If you are using this version or a more recent one, you should not encounter any compatibility issues.
+- **MRI**: MacawFramework is compatible with Matz's Ruby Interpreter (MRI), version 3.0.0 and onwards. If you are using this version or a more recent one, you should not encounter any compatibility issues.
 
 - **TruffleRuby**: TruffleRuby is another Ruby interpreter that is fully compatible with MacawFramework. This provides developers with more flexibility in their choice of Ruby interpreter.
 
@@ -112,6 +112,17 @@ end
 ```
 
 *Observation: To activate caching, you also have to set its properties in the `application.json` file. If you don't, the caching strategy will not work. See the Configuration section below for more details.*
+
+Another method of cache is the manual cache via the `MacawFramework::Cache` class. You can manually
+call the `read` and `write` methods of this singleton to save and recover values inside your methods.
+
+```ruby
+MacawFramework::Cache.write(:name, 'Maria', expires_in: 1800)
+# Your code
+MacawFramework::Cache.read(:name) # Maria
+```
+
+Manual cache does not need any additional configuration.
 
 ### Session management: Handle user sessions with server-side in-memory storage
 

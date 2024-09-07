@@ -143,3 +143,7 @@
 - Fixed a bug where errors were being logged with level INFO
 - Improved error stack trace
 
+## [1.3.1]
+- Fixing bug where missing session configuration on `application.json` break the application
+- Including a Cache module for manual caching.
+
