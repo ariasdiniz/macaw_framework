@@ -5,8 +5,8 @@ require_relative '../lib/macaw_framework'
 
 class TestCacheClass < Minitest::Test
   def setup
-    @cache = MacawFramework::Cache.instance
-    @cache.invalidation_frequency = 0.5
+    @cache = MacawFramework::Cache
+    @cache.instance.invalidation_frequency = 0.5
   end
 
   def test_cache_hit
