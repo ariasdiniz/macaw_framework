@@ -155,11 +155,11 @@ module MacawFramework
     rescue Interrupt
       if @macaw_log.nil?
         puts('Stopping server')
-        @server.close
+        @server.shutdown
         puts('Macaw stop flying for some seeds...')
       else
         @macaw_log.info('Stopping server')
-        @server.close
+        @server.shutdown
         @macaw_log.info('Macaw stop flying for some seeds...')
       end
     end

@@ -74,8 +74,17 @@ class ThreadServer
 
   ##
   # Method Responsible for closing the TCP server.
-  def close
-    shutdown
+  def shutdown
+    @is_shutting_down = true
+    loop do
+      break if @work_queue.empty?
+
+      sleep 0.1
+    end
+
+    @num_threads.times { @work_queue << :shutdown }
+    @workers.each(&:join)
+    @server.close
   end
 
   private
@@ -106,18 +115,5 @@ class ThreadServer
         end
       end
     end
-  end
-
-  def shutdown
-    @is_shutting_down = true
-    loop do
-      break if @work_queue.empty?
-
-      sleep 0.1
-    end
-
-    @num_threads.times { @work_queue << :shutdown }
-    @workers.each(&:join)
-    @server.close
   end
 end

@@ -70,7 +70,7 @@ class ServerTest < Minitest::Test
   end
 
   def teardown
-    @server&.close
+    @server&.shutdown
   end
 
   def test_run_and_close
@@ -86,7 +86,7 @@ class ServerTest < Minitest::Test
 
     assert_match(/Hello, World!/, response)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -102,7 +102,7 @@ class ServerTest < Minitest::Test
 
     assert_match %r{HTTP/1.1 404 Not Found}, response
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -118,7 +118,7 @@ class ServerTest < Minitest::Test
 
     assert_match %r{HTTP/1.1 200 OK}, response
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -134,7 +134,7 @@ class ServerTest < Minitest::Test
 
     assert_match %r{HTTP/1.1 500 Internal Server Error}, response
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -160,7 +160,7 @@ class ServerTest < Minitest::Test
 
     assert_match %r{HTTP/1.1 429 Too Many Requests}, response
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -179,7 +179,7 @@ class ServerTest < Minitest::Test
 
     assert_match(/Hello, POST!/, response)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -207,7 +207,7 @@ class ServerTest < Minitest::Test
     assert_equal '200', response.code
     assert_match(/Hello, World!/, response.body)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -235,7 +235,7 @@ class ServerTest < Minitest::Test
 
     assert_match(/Session value: 42/, response2)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -264,7 +264,7 @@ class ServerTest < Minitest::Test
     assert_match(/Session value: /, response2)
     refute_match(/Session value: 42/, response2)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -344,7 +344,7 @@ class ServerTest < Minitest::Test
 
     assert_match(/hello/, response)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -373,7 +373,7 @@ class ServerTest < Minitest::Test
     assert_equal '200', response.code
     assert_match(/Hello, World!/, response.body)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -414,7 +414,7 @@ class ServerTest < Minitest::Test
 
     threads.each(&:join)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 
@@ -433,7 +433,7 @@ class ServerTest < Minitest::Test
 
     assert_match(/Hello, World!/, response)
 
-    @server.close
+    @server.shutdown
     server_thread.join
   end
 end
