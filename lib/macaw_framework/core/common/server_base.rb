@@ -39,14 +39,13 @@ module ServerBase
   end
 
   def handle_client(client)
-    path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
+    _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
     raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
     client_data = get_client_data(body, headers, parameters)
     session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
 
-    @macaw_log&.info("Running #{path.gsub("\n", '').gsub("\r", '')}")
     message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
                                                       method_name, client_data, session_id, client.peeraddr[3])
     response_headers ||= {}
