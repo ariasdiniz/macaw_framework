@@ -147,3 +147,7 @@
 - Fixing bug where missing session configuration on `application.json` break the application
 - Including a Cache module for manual caching.
 
+## [1.3.21]
+- Refactoring shutdown method
+- Fixing a bug where a HTTP call without client data broke the parser
+- Removing logs registering new HTTP connections to reduce log bloat

@@ -11,9 +11,6 @@ module LoggingAspect
   def call_endpoint(logger, *args)
     return super(*args) if logger.nil?
 
-    endpoint_name = args[1].split('.')[1..].join('/')
-    logger.info("Request received for [#{endpoint_name}] from [#{args[-1]}]")
-
     begin
       response = super(*args)
     rescue StandardError => e
