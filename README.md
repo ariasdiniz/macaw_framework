@@ -2,8 +2,8 @@
 # MacawFramework
 
 MacawFramework is a lightweight, easy-to-use web framework for Ruby designed to simplify the development of small to 
-medium-sized web applications. With support for various HTTP methods, caching, and session management, MacawFramework 
-provides developers with the essential tools to quickly build and deploy their applications.
+medium-sized web applications. Weighting less than 26Kb with support for various HTTP methods, caching, and session management,
+MacawFramework provides developers with the essential tools to quickly build and deploy their applications.
 
 - [MacawFramework](#macawframework)
     * [Features](#features)
@@ -31,7 +31,8 @@ provides developers with the essential tools to quickly build and deploy their a
 - Session management with server-side in-memory storage
 - Basic rate limiting and SSL support
 - Prometheus integration for monitoring and metrics
-- Lightweight and easy to learn
+- Less than 26Kb
+- Easy to learn
 
 ## Installation
 
