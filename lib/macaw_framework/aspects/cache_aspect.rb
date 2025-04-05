@@ -3,15 +3,15 @@
 ##
 # Aspect that provide cache for the endpoints.
 module CacheAspect
-  def call_endpoint(cache, *args)
-    return super(*args) unless !cache[:cache].nil? && cache[:endpoints_to_cache]&.include?(args[0])
+  def call_endpoint(cache, *args, **kwargs)
+    return super(*args, **kwargs) unless !cache[:cache].nil? && cache[:endpoints_to_cache]&.include?(args[0])
 
     cache_filtered_name = cache_name_filter(args[1], cache[:cached_methods][args[0]])
 
     cache[:cache].mutex.synchronize do
       return cache[:cache].cache[cache_filtered_name][0] unless cache[:cache].cache[cache_filtered_name].nil?
 
-      response = super(*args)
+      response = super(*args, **kwargs)
       cache[:cache].cache[cache_filtered_name] = [response, Time.now] if should_cache_response?(response[1])
       response
     end

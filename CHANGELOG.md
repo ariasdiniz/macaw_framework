@@ -151,3 +151,6 @@
 - Refactoring shutdown method
 - Fixing a bug where a HTTP call without client data broke the parser
 - Removing logs registering new HTTP connections to reduce log bloat
+
+## [1.3.3]
+- Fixing error with tests on Ruby 3.4.x due to splash operator
