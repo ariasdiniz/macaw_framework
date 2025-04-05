@@ -3,8 +3,8 @@
 ##
 # Aspect that provides application metrics using prometheus.
 module PrometheusAspect
-  def call_endpoint(prometheus_middleware, *args)
-    return super(*args) if prometheus_middleware.nil?
+  def call_endpoint(prometheus_middleware, *args, **kwargs)
+    return super(*args, **kwargs) if prometheus_middleware.nil?
 
     start_time = Time.now
 

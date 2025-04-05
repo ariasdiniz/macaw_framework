@@ -8,8 +8,8 @@ require_relative '../data_filters/log_data_filter'
 # the input and output of every endpoint called
 # in the framework.
 module LoggingAspect
-  def call_endpoint(logger, *args)
-    return super(*args) if logger.nil?
+  def call_endpoint(logger, *args, **kwargs)
+    return super(*args, **kwargs) if logger.nil?
 
     begin
       response = super(*args)
