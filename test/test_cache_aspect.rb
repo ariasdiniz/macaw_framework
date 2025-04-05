@@ -3,7 +3,6 @@
 require_relative 'test_helper'
 require_relative '../lib/macaw_framework/aspects/cache_aspect'
 require 'ostruct'
-require 'mutex_m'
 
 class DummyBase
   attr_reader :call_count, :last_args, :last_kwargs
