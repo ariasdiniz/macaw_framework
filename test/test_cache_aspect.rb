@@ -146,4 +146,24 @@ class CacheAspectTest < Minitest::Test
     refute cache[:cache].cache.key?(expected_key)
     assert_equal ['non_cache_result', 300], result
   end
+
+  def test_cache_boundary_status400
+    cache = @cache_obj.dup
+    @dummy.define_response(['non_cache_result', 400])
+    result = @dummy.call_endpoint(cache, 'endpoint1', @client_data)
+    filtered = { params: { allowed_param: 'param1' }, headers: { allowed_header: 'value1' } }
+    expected_key = [filtered].to_s.to_sym
+    refute cache[:cache].cache.key?(expected_key)
+    assert_equal ['non_cache_result', 400], result
+  end
+
+  def test_cache_boundary_status500
+    cache = @cache_obj.dup
+    @dummy.define_response(['non_cache_result', 500])
+    result = @dummy.call_endpoint(cache, 'endpoint1', @client_data)
+    filtered = { params: { allowed_param: 'param1' }, headers: { allowed_header: 'value1' } }
+    expected_key = [filtered].to_s.to_sym
+    refute cache[:cache].cache.key?(expected_key)
+    assert_equal ['non_cache_result', 500], result
+  end
 end
