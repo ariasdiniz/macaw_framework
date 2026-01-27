@@ -18,7 +18,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.2
+          ruby-version: 4.0.1
       - name: Update bundler
         run: gem update bundler
       - name: Install Dependencies
