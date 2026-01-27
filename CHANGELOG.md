@@ -155,5 +155,5 @@
 ## [1.3.22]
 - Fixing error with tests on Ruby 3.4.x due to splash operator
 
-## [1.3.3]
+## [1.4]
 - Add missing dependencies for Ruby 4.x
