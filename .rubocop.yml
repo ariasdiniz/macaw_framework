@@ -30,5 +30,8 @@ Metrics/ModuleLength:
 Naming/MemoizedInstanceVariableName:
   Enabled: false
 
+Naming/MethodName:
+  Enabled: false
+
 Style/ClassAndModuleChildren:
   Enabled: false
