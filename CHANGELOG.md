@@ -157,3 +157,6 @@
 
 ## [1.4]
 - Add missing dependencies for Ruby 4.x
+
+## [1.4.1] - 2026-02-01
+- Fixing issue when re-spawning new threads
