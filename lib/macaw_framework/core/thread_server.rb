@@ -91,7 +91,7 @@ class ThreadServer
 
   def spawn_worker
     @workers_mutex.synchronize do
-      @workers << Thread.new do
+      t = Thread.new do
         loop do
           client = @work_queue.pop
           break if client == :shutdown
@@ -99,6 +99,8 @@ class ThreadServer
           handle_client(client)
         end
       end
+      @workers << t
+      t
     end
   end
 
@@ -110,7 +112,8 @@ class ThreadServer
             @macaw_log&.info("Worker thread #{index} finished, not respawning due to server shutdown.")
           else
             @macaw_log&.error("Worker thread #{index} died, respawning...")
-            @workers[index] = spawn_worker
+            @workers.delete_at(index)
+            spawn_worker
           end
         end
       end
