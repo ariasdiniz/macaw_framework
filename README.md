@@ -168,10 +168,6 @@ end
     "prometheus": {
       "endpoint": "/metrics"
     },
-    "rate_limiting": {
-      "window": 10,
-      "max_requests": 3
-    },
     "ssl": {
       "min": "SSL3",
       "max": "TLS1.3",
@@ -270,9 +266,6 @@ m.threads = 300
 ```
 
 - The default number of virtual threads in the thread pool is 200.
-
-- Rate Limit window should also be specified in seconds. Rate limit will be activated only if the `rate_limiting` config
-  exists inside `application.json`.
 
 - If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
   will be wrapped with HTTPS security using the provided certificate.

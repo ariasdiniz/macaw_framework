@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../middlewares/memory_invalidation_middleware'
-require_relative '../../middlewares/rate_limiter_middleware'
 require_relative '../../data_filters/response_data_filter'
-require_relative '../../errors/too_many_requests_error'
 require_relative '../../utils/supported_ssl_versions'
 require_relative '../../aspects/prometheus_aspect'
 require_relative '../../aspects/logging_aspect'
@@ -41,7 +39,6 @@ module ServerBase
   def handle_client(client)
     _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
     raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
-    raise TooManyRequestsError unless @rate_limit.nil? || @rate_limit.allow?(client.peeraddr[3])
 
     client_data = get_client_data(body, headers, parameters)
     session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
@@ -56,8 +53,6 @@ module ServerBase
     client.puts ResponseDataFilter.mount_response(status, response_headers, message)
   rescue IOError, Errno::EPIPE => e
     @macaw_log&.error("Error writing to client: #{e.message}")
-  rescue TooManyRequestsError
-    client.print "HTTP/1.1 429 Too Many Requests\r\n\r\n"
   rescue EndpointNotMappedError
     client.print "HTTP/1.1 404 Not Found\r\n\r\n"
   rescue StandardError => e
@@ -76,15 +71,6 @@ module ServerBase
     session_id = SecureRandom.uuid if @session[session_id].nil?
     @session[session_id] ||= [{}, Time.now]
     session_id
-  end
-
-  def set_rate_limiting
-    return unless @macaw.config&.dig('macaw', 'rate_limiting')
-
-    @rate_limit = RateLimiterMiddleware.new(
-      @macaw.config['macaw']['rate_limiting']['window'].to_i || 1,
-      @macaw.config['macaw']['rate_limiting']['max_requests'].to_i || 60
-    )
   end
 
   def set_ssl
@@ -127,7 +113,6 @@ module ServerBase
 
   def set_features
     @is_shutting_down = false
-    set_rate_limiting
     set_session
     set_ssl
   end

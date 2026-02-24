@@ -33,7 +33,6 @@ class ThreadServer
     @num_threads = macaw.threads
     @work_queue = Queue.new
     set_features
-    @rate_limit ||= nil
     @cache = {
       cache: cache,
       endpoints_to_cache: endpoints_to_cache || [],

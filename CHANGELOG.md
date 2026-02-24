@@ -160,3 +160,6 @@
 
 ## [1.4.1] - 2026-02-01
 - Fixing issue when re-spawning new threads
+
+## [1.4.1] - 2026-02-24
+- Removing unused Rate Limiting Middleware
