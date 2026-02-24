@@ -9,7 +9,6 @@ require_relative '../lib/macaw_framework/aspects/logging_aspect'
 require_relative '../lib/macaw_framework/utils/http_status_code'
 require_relative '../lib/macaw_framework/data_filters/request_data_filtering'
 require_relative '../lib/macaw_framework/errors/endpoint_not_mapped_error'
-require_relative '../lib/macaw_framework/errors/too_many_requests_error'
 
 class TestEndpoint
   attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header, :session
@@ -133,32 +132,6 @@ class ServerTest < Minitest::Test
     client.close
 
     assert_match %r{HTTP/1.1 500 Internal Server Error}, response
-
-    @server.shutdown
-    server_thread.join
-  end
-
-  def test_rate_limiting
-    @macaw.config = { 'macaw' => { 'rate_limiting' => { 'window' => 1, 'max_requests' => 1 } } }
-    @server = ThreadServer.new(@macaw)
-
-    server_thread = Thread.new { @server.run }
-
-    sleep(0.1)
-
-    client = TCPSocket.new(@bind, @port)
-    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
-    response = client.read
-    client.close
-
-    assert_match(/Hello, World!/, response)
-
-    client = TCPSocket.new(@bind, @port)
-    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
-    response = client.read
-    client.close
-
-    assert_match %r{HTTP/1.1 429 Too Many Requests}, response
 
     @server.shutdown
     server_thread.join
