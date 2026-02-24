@@ -15,7 +15,7 @@ MacawFramework provides developers with the essential tools to quickly build and
         + [Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods](#basic-routing-define-routes-with-support-for-get-post-put-patch-and-delete-http-methods)
         + [Caching: Improve performance by caching responses and configuring cache invalidation](#caching-improve-performance-by-caching-responses-and-configuring-cache-invalidation)
         + [Session management: Handle user sessions securely with server-side in-memory storage](#session-management-handle-user-sessions-securely-with-server-side-in-memory-storage)
-        + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-rate-limiting-ssl-support-and-prometheus-integration)
+        + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as SSL support and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-rate-limiting-ssl-support-and-prometheus-integration)
         + [Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support](#monitoring-easily-monitor-your-application-performance-and-metrics-with-built-in-prometheus-support)
         + [Routing for "public" Folder: Serve Static Assets](#routing-for-public-folder-serve-static-assets)
         + [Periodic Jobs](#periodic-jobs)
@@ -29,7 +29,7 @@ MacawFramework provides developers with the essential tools to quickly build and
 - Simple routing with support for GET, POST, PUT, PATCH, and DELETE HTTP methods
 - Caching middleware for improved performance
 - Session management with server-side in-memory storage
-- Basic rate limiting and SSL support
+- SSL support
 - Prometheus integration for monitoring and metrics
 - Less than 26Kb
 - Easy to learn
@@ -154,7 +154,7 @@ m.get('/dashboard') do |context|
 end
 ```
 
-### Configuration: Customize various aspects of the framework through the application.json configuration file, such as rate limiting, SSL support, and Prometheus integration
+### Configuration: Customize various aspects of the framework through the application.json configuration file, such as SSL support and Prometheus integration
 
 ```json
 {
