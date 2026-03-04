@@ -3,10 +3,8 @@
 require_relative '../../middlewares/memory_invalidation_middleware'
 require_relative '../../data_filters/response_data_filter'
 require_relative '../../utils/supported_ssl_versions'
-require_relative '../../aspects/prometheus_aspect'
 require_relative '../../aspects/logging_aspect'
 require_relative '../../aspects/cache_aspect'
-require 'securerandom'
 
 ##
 # Base module for Server classes. It contains
@@ -16,18 +14,16 @@ require 'securerandom'
 module ServerBase
   prepend CacheAspect
   prepend LoggingAspect
-  prepend PrometheusAspect
 
   private
 
-  def call_endpoint(name, client_data, session_id, _client_ip)
+  def call_endpoint(name, client_data)
     @macaw.send(
       name.to_sym,
       {
         headers: client_data[:headers],
         body: client_data[:body],
-        params: client_data[:params],
-        client: @session&.dig(session_id)&.dig(0)
+        params: client_data[:params]
       }
     )
   end
@@ -65,12 +61,8 @@ module ServerBase
 
   def build_response(method_name, headers, body, parameters, keep_alive)
     client_data = get_client_data(body, headers, parameters)
-    session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
-
-    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
-                                                      method_name, client_data, session_id, nil)
+    message, status, response_headers = call_endpoint(@macaw_log, @cache, method_name, client_data)
     response_headers ||= {}
-    response_headers[@macaw.secure_header] = session_id if @macaw.session
     status ||= 200
     response_headers['Connection'] = keep_alive ? 'keep-alive' : 'close'
     response_headers['Content-Length'] = message.to_s.bytesize
@@ -90,16 +82,6 @@ module ServerBase
 
   def keep_alive_connection?(headers)
     headers['Connection']&.downcase != 'close'
-  end
-
-  def declare_client_session(headers, secure_header_name)
-    @session_mutex ||= Mutex.new
-    @session_mutex.synchronize do
-      session_id = headers[secure_header_name] || SecureRandom.uuid
-      session_id = SecureRandom.uuid if @session[session_id].nil?
-      @session[session_id] ||= [{}, Time.now]
-      session_id
-    end
   end
 
   def set_ssl
@@ -128,21 +110,8 @@ module ServerBase
     raise e
   end
 
-  def set_session
-    return unless @macaw.session
-
-    @session ||= {}
-    inv = if @macaw.config&.dig('macaw', 'session', 'invalidation_time')
-            MemoryInvalidationMiddleware.new(@macaw.config['macaw']['session']['invalidation_time'])
-          else
-            MemoryInvalidationMiddleware.new
-          end
-    inv.cache = @session
-  end
-
   def set_features
     @is_shutting_down = false
-    set_session
     set_ssl
   end
 end

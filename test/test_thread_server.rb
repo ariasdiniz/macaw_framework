@@ -11,36 +11,22 @@ require_relative '../lib/macaw_framework/data_filters/request_data_filtering'
 require_relative '../lib/macaw_framework/errors/endpoint_not_mapped_error'
 
 class TestEndpoint
-  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header, :session,
+  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods,
               :keep_alive_timeout
   attr_accessor :config
 
   def initialize
-    @routes = %w[get.hello get.ok get.ise post.set_session get.get_session]
+    @routes = %w[get.hello get.ok get.ise]
     @port = 9292
     @bind = 'localhost'
     @threads = 1
     @macaw_log = nil
     @config = nil
     @cached_methods = []
-    @secure_header = 'X-Session-ID'
-    @session = true
     @keep_alive_timeout = 30
     define_singleton_method('get.hello', ->(_context) { 'Hello, World!' })
     define_singleton_method('get.ok', ->(_context) { ['Ok', 200] })
     define_singleton_method('get.ise', ->(_context) { raise StandardError, 'Internal server error' })
-    @routes << 'get.session'
-    define_singleton_method('post.set_session', lambda { |context|
-                                                  context[:client][:value] = 42
-                                                  ['Session set', 200]
-                                                })
-    define_singleton_method('get.get_session', ->(context) { "Session value: #{context[:client][:value]}" })
-  end
-
-  def update_session(client_session)
-    client_session[0][:counter] ||= 0
-    client_session[0][:counter] += 1
-    ["Counter: #{client_session[0][:counter]}", 200]
   end
 end
 
@@ -181,67 +167,6 @@ class ServerTest < Minitest::Test
 
     assert_equal '200', response.code
     assert_match(/Hello, World!/, response.body)
-
-    @server.shutdown
-    server_thread.join
-  end
-
-  def test_session
-    @macaw.config = { 'macaw' => { 'session' => { 'invalidation_time' => 30 } } }
-    @server = ThreadServer.new(@macaw)
-
-    server_thread = Thread.new { @server.run }
-    sleep(0.1)
-
-    # First request to set the session value
-    client1 = TCPSocket.new(@bind, @port)
-    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-    response1 = client1.read
-    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
-    client1.close
-
-    assert_match(/Session set/, response1)
-
-    # Second request to get the session value
-    client2 = TCPSocket.new(@bind, @port)
-    req = "GET /get_session HTTP/1.1\r\nHost: example.com\r\n" \
-          "X-Session-ID: #{session}\r\nConnection: close\r\n\r\n"
-    client2.puts req
-    response2 = client2.read
-    client2.close
-
-    assert_match(/Session value: 42/, response2)
-
-    @server.shutdown
-    server_thread.join
-  end
-
-  def test_session_invalidation
-    @macaw.config = { 'macaw' => { 'session' => { 'invalidation_time' => 2 } } }
-    @server = ThreadServer.new(@macaw)
-
-    server_thread = Thread.new { @server.run }
-    sleep(0.1)
-
-    client1 = TCPSocket.new(@bind, @port)
-    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-    response1 = client1.read
-    session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
-    client1.close
-
-    assert_match(/Session set/, response1)
-
-    sleep(3.5)
-
-    client2 = TCPSocket.new(@bind, @port)
-    req = "GET /get_session HTTP/1.1\r\nHost: example.com\r\n" \
-          "X-Session-ID: #{session}\r\nConnection: close\r\n\r\n"
-    client2.puts req
-    response2 = client2.read
-    client2.close
-
-    assert_match(/Session value: /, response2)
-    refute_match(/Session value: 42/, response2)
 
     @server.shutdown
     server_thread.join

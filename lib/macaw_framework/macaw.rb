@@ -1,14 +1,10 @@
 # frozen_string_literal: true
 
 require_relative 'errors/endpoint_not_mapped_error'
-require_relative 'middlewares/prometheus_middleware'
 require_relative 'data_filters/request_data_filtering'
 require_relative 'middlewares/memory_invalidation_middleware'
-require_relative 'core/cron_runner'
 require_relative 'core/thread_server'
 require_relative 'version'
-require 'prometheus/client'
-require 'securerandom'
 require 'singleton'
 require 'pathname'
 require 'logger'
@@ -23,7 +19,7 @@ module MacawFramework; end
 # Class responsible for creating endpoints and
 # starting the web server.
 class MacawFramework::Macaw
-  attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods, :secure_header, :session, :keep_alive_timeout
+  attr_reader :routes, :macaw_log, :config, :cached_methods, :keep_alive_timeout
   attr_accessor :port, :bind, :threads
 
   ##
@@ -120,26 +116,6 @@ class MacawFramework::Macaw
   end
 
   ##
-  # Spawn and start a thread running the defined periodic job.
-  # @param {Integer} interval
-  # @param {Integer?} start_delay
-  # @param {String} job_name
-  # @param {Proc} block
-  # @example
-  #
-  #   macaw = MacawFramework::Macaw.new
-  #   macaw.setup_job(interval: 60, start_delay: 60, job_name: "job 1") do
-  #     puts "I'm a periodic job that runs every minute"
-  #   end
-  ##
-  def setup_job(interval: 60, start_delay: 0, job_name: "job_#{SecureRandom.uuid}", &block)
-    @cron_runner ||= CronRunner.new(self)
-    @jobs ||= []
-    @cron_runner.start_cron_job_thread(interval, start_delay, job_name, &block)
-    @jobs << job_name
-  end
-
-  ##
   # Starts the web server
   def start!
     if @macaw_log.nil?
@@ -153,7 +129,7 @@ class MacawFramework::Macaw
       @macaw_log.info("Number of threads: #{@threads}")
       @macaw_log.info('---------------------------------')
     end
-    @server = @server_class.new(self, @endpoints_to_cache, @cache, @prometheus, @prometheus_middleware)
+    @server = @server_class.new(self, @endpoints_to_cache, @cache)
     server_loop(@server)
   rescue Interrupt
     if @macaw_log.nil?
@@ -167,18 +143,6 @@ class MacawFramework::Macaw
     end
   end
 
-  ##
-  # This method is intended to start the framework
-  # without an web server. This can be useful when
-  # you just want to keep cron jobs running, without
-  # mapping any HTTP endpoints.
-  def start_without_server!
-    @macaw_log.nil? ? puts('Application starting') : @macaw_log.info('Application starting')
-    loop { sleep(3600) }
-  rescue Interrupt
-    @macaw_log.nil? ? puts('Macaw stop flying for some seeds.') : @macaw_log.info('Macaw stop flying for some seeds.')
-  end
-
   private
 
   def setup_default_configs
@@ -187,15 +151,11 @@ class MacawFramework::Macaw
     @config ||= nil
     @threads ||= 200
     @endpoints_to_cache = []
-    @prometheus ||= nil
-    @prometheus_middleware ||= nil
   end
 
   def apply_options(custom_log)
     setup_basic_config(custom_log)
-    setup_session
     setup_cache
-    setup_prometheus
   rescue StandardError => e
     @macaw_log&.warn(e.message)
   end
@@ -204,14 +164,6 @@ class MacawFramework::Macaw
     return if @config['macaw']['cache'].nil?
 
     @cache = MemoryInvalidationMiddleware.new(@config['macaw']['cache']['cache_invalidation'].to_i || 3_600)
-  end
-
-  def setup_session
-    @session = false
-    return if @config['macaw']['session'].nil?
-
-    @session = true
-    @secure_header = @config['macaw']['session']['secure_header'] || 'X-Session-ID'
   end
 
   def setup_basic_config(custom_log)
@@ -232,14 +184,6 @@ class MacawFramework::Macaw
     @macaw_log&.warn("Config file '#{config_file}' is not valid JSON: #{e.message}. Using default settings.")
     @config = { 'macaw' => {} }
     @keep_alive_timeout = 30
-  end
-
-  def setup_prometheus
-    return unless @config['macaw']['prometheus']
-
-    @prometheus = Prometheus::Client::Registry.new
-    @prometheus_middleware = PrometheusMiddleware.new
-    @prometheus_middleware&.configure_prometheus(@prometheus, @config, self)
   end
 
   def server_loop(server)

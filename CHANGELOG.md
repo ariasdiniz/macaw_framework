@@ -188,4 +188,7 @@
 - Add configurable per-connection read timeout (default 30 s, configurable via `keep_alive_timeout` in `application.json`) to prevent idle or faulty clients from holding worker threads indefinitely
 - Server now responds with `Connection: keep-alive` or `Connection: close` headers according to the client's request
 - Fix request parser to properly detect client EOF and raise `EOFError` instead of propagating `nil` through the parsing pipeline
-- Use `IO#timeout=` (Ruby 3.2+) for socket timeout with `SO_RCVTIMEO` fallback for older Ruby and SSL sockets
+- Use `IO#timeout=` (Ruby 3.2+) for socket timeout with `SO_RCVTIMEO` fallback for older Ruby and SSL sockets- Remove Prometheus integration: `PrometheusAspect`, `PrometheusMiddleware`, and `prometheus-client` gem dependency removed
+- Remove built-in session management: `declare_client_session`, `set_session`, `@session`, and all related configuration removed
+- Remove `CronRunner` and `setup_job`: periodic job scheduling is no longer a responsibility of the framework; use a dedicated job library instead
+- Remove `start_without_server!` method, which existed solely to support cron-only deployments
