@@ -83,6 +83,8 @@ class MacawFramework::Cache
       @mutex.synchronize do
         @cache.delete_if { |_, v| v[:expires_in] < Time.now }
       end
+    rescue StandardError => e
+      warn "Cache invalidation error: #{e.message}"
     end
   end
 end

@@ -71,7 +71,8 @@ class ThreadServer
       sleep 0.1
     end
 
-    @num_threads.times { @work_queue << :shutdown }
+    worker_count = @workers_mutex.synchronize { @workers.size }
+    worker_count.times { @work_queue << :shutdown }
     @workers.each(&:join)
     @server&.close
   end

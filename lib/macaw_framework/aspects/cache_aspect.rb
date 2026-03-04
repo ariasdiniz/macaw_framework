@@ -12,7 +12,7 @@ module CacheAspect
     return cached_response unless cached_response.nil?
 
     response = super(*args, **kwargs)
-    if should_cache_response?(response[1])
+    if response && should_cache_response?(response[1])
       cache[:cache].mutex.synchronize do
         cache[:cache].cache[cache_filtered_name] = [response, Time.now]
       end

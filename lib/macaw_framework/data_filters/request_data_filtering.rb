@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'cgi/escape'
 require_relative '../errors/endpoint_not_mapped_error'
 require_relative '../errors/payload_too_large_error'
 
@@ -15,7 +16,7 @@ module RequestDataFiltering
     first_line = client.gets
     raise EOFError if first_line.nil?
 
-    path, parameters = extract_url_parameters(first_line.gsub('HTTP/1.1', ''))
+    path, parameters = extract_url_parameters(first_line.gsub(/\s*HTTP\/\d+(?:\.\d+)?\s*$/i, ''))
     parameters = {} if parameters.nil?
 
     method_name = sanitize_method_name(path)
@@ -119,8 +120,13 @@ module RequestDataFiltering
   end
 
   ##
-  # Method responsible for sanitizing the parameter value
+  # Method responsible for sanitizing the parameter value.
+  # URL-decodes percent-encoded characters (e.g. %40 → @, %20 → space, + → space).
   def self.sanitize_parameter_value(value)
-    value&.gsub(/[^\w\s]/, '')&.gsub(/\s/, '')
+    return nil if value.nil?
+
+    CGI.unescape(value)
+  rescue ArgumentError
+    value
   end
 end
