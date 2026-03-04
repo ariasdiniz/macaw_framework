@@ -73,6 +73,7 @@ module ServerBase
     response_headers[@macaw.secure_header] = session_id if @macaw.session
     status ||= 200
     response_headers['Connection'] = keep_alive ? 'keep-alive' : 'close'
+    response_headers['Content-Length'] = message.to_s.bytesize
     ResponseDataFilter.mount_response(status, response_headers, message)
   end
 
