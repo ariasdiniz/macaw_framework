@@ -12,3 +12,11 @@ Gemfile.lock
 sonar-project.properties
 /.scannerwork/
 utils.txt
+
+# C extension build artifacts
+ext/**/*.so
+ext/**/*.bundle
+ext/**/*.o
+ext/**/Makefile
+ext/**/mkmf.log
+ext/**/*.log

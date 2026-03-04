@@ -22,7 +22,9 @@ module ResponseDataFilter
 
     response = +''
     headers.each do |key, value|
-      response << "#{key}: #{value}\r\n"
+      safe_key = key.to_s.gsub(/[\r\n]/, '')
+      safe_value = value.to_s.gsub(/[\r\n]/, '')
+      response << "#{safe_key}: #{safe_value}\r\n"
     end
     response << "\r\n"
     response

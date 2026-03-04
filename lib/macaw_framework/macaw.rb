@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'errors/endpoint_not_mapped_error'
+require_relative 'errors/payload_too_large_error'
 require_relative 'data_filters/request_data_filtering'
 require_relative 'middlewares/memory_invalidation_middleware'
 require_relative 'core/thread_server'
@@ -19,7 +20,7 @@ module MacawFramework; end
 # Class responsible for creating endpoints and
 # starting the web server.
 class MacawFramework::Macaw
-  attr_reader :routes, :macaw_log, :config, :cached_methods, :keep_alive_timeout
+  attr_reader :routes, :macaw_log, :config, :cached_methods, :keep_alive_timeout, :max_body_size
   attr_accessor :port, :bind, :threads
 
   ##
@@ -130,6 +131,7 @@ class MacawFramework::Macaw
       @macaw_log.info('---------------------------------')
     end
     @server = @server_class.new(self, @endpoints_to_cache, @cache)
+    Signal.trap('TERM') { raise Interrupt }
     server_loop(@server)
   rescue Interrupt
     if @macaw_log.nil?
@@ -147,7 +149,7 @@ class MacawFramework::Macaw
 
   def setup_default_configs
     @port ||= 8080
-    @bind ||= 'localhost'
+    @bind ||= '0.0.0.0'
     @config ||= nil
     @threads ||= 200
     @endpoints_to_cache = []
@@ -163,7 +165,7 @@ class MacawFramework::Macaw
   def setup_cache
     return if @config['macaw']['cache'].nil?
 
-    @cache = MemoryInvalidationMiddleware.new(@config['macaw']['cache']['cache_invalidation'].to_i || 3_600)
+    @cache = MemoryInvalidationMiddleware.new(@config.dig('macaw', 'cache', 'cache_invalidation')&.to_i || 3_600)
   end
 
   def setup_basic_config(custom_log)
@@ -173,17 +175,20 @@ class MacawFramework::Macaw
     config_file = ENV.fetch('MACAW_CONFIG', 'application.json')
     @config = JSON.parse(File.read(config_file))
     @port = @config['macaw']['port'] || 8080
-    @bind = @config['macaw']['bind'] || 'localhost'
+    @bind = @config['macaw']['bind'] || '0.0.0.0'
     @threads = @config['macaw']['threads'] || 200
     @keep_alive_timeout = @config['macaw']['keep_alive_timeout'] || 30
+    @max_body_size = @config.dig('macaw', 'max_body_size')&.to_i || 1_048_576
   rescue Errno::ENOENT
     @macaw_log&.warn("Config file '#{config_file}' not found, using default settings.")
     @config = { 'macaw' => {} }
     @keep_alive_timeout = 30
+    @max_body_size = 1_048_576
   rescue JSON::ParserError => e
     @macaw_log&.warn("Config file '#{config_file}' is not valid JSON: #{e.message}. Using default settings.")
     @config = { 'macaw' => {} }
     @keep_alive_timeout = 30
+    @max_body_size = 1_048_576
   end
 
   def server_loop(server)

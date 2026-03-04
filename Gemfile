@@ -6,7 +6,6 @@ gemspec
 
 gem 'logger', '~> 1.7'
 gem 'openssl'
-gem 'prometheus-client', '~> 4.1'
 
 group :test do
   gem 'minitest', '~> 5.0'

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require 'cgi/escape'
 require_relative '../errors/endpoint_not_mapped_error'
+require_relative '../errors/payload_too_large_error'
 
 ##
 # Module containing methods to filter Strings
@@ -10,17 +12,17 @@ module RequestDataFiltering
   ##
   # Method responsible for extracting information
   # provided by the client like Headers and Body
-  def self.parse_request_data(client, routes)
+  def self.parse_request_data(client, routes, max_body_size = 1_048_576)
     first_line = client.gets
     raise EOFError if first_line.nil?
 
-    path, parameters = extract_url_parameters(first_line.gsub('HTTP/1.1', ''))
+    path, parameters = extract_url_parameters(first_line.gsub(%r{\s*HTTP/\d+(?:\.\d+)?\s*$}i, ''))
     parameters = {} if parameters.nil?
 
     method_name = sanitize_method_name(path)
     method_name = select_path(method_name, routes, parameters)
     body_first_line, headers = extract_headers(client)
-    body = extract_body(client, body_first_line, headers['Content-Length'].to_i)
+    body = extract_body(client, body_first_line, headers['Content-Length'].to_i, max_body_size)
     [path, method_name, headers, body, parameters]
   end
 
@@ -87,7 +89,9 @@ module RequestDataFiltering
 
   ##
   # Method responsible for extracting the body from request
-  def self.extract_body(client, body_first_line, content_length)
+  def self.extract_body(client, body_first_line, content_length, max_body_size = 1_048_576)
+    raise PayloadTooLargeError if content_length > max_body_size
+
     body = client&.read(content_length)
     body_first_line << body.to_s
   end
@@ -116,8 +120,13 @@ module RequestDataFiltering
   end
 
   ##
-  # Method responsible for sanitizing the parameter value
+  # Method responsible for sanitizing the parameter value.
+  # URL-decodes percent-encoded characters (e.g. %40 → @, %20 → space, + → space).
   def self.sanitize_parameter_value(value)
-    value&.gsub(/[^\w\s]/, '')&.gsub(/\s/, '')
+    return nil if value.nil?
+
+    CGI.unescape(value)
+  rescue ArgumentError
+    value
   end
 end

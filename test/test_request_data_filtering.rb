@@ -136,6 +136,25 @@ class TestRequestDataFiltering < Minitest::Test
     assert_equal 'parameter1', filter.sanitize_parameter_name('parameter1')
     assert_equal 'parameter1', filter.sanitize_parameter_name('parameter1&$^#%')
     assert_equal '123value', filter.sanitize_parameter_value('123value')
-    assert_equal '123value', filter.sanitize_parameter_value("123value\n ")
+    assert_nil filter.sanitize_parameter_value(nil)
+    # URL-decoding: percent-encoded chars are decoded
+    assert_equal 'user@example.com', filter.sanitize_parameter_value('user%40example.com')
+    assert_equal 'hello world', filter.sanitize_parameter_value('hello+world')
+    assert_equal 'hello world', filter.sanitize_parameter_value('hello%20world')
+    assert_equal '3.14', filter.sanitize_parameter_value('3.14')
+  end
+
+  def test_parse_request_data_with_legacy_http_version
+    raw = "GET /test_parameters?param1=hello%20world HTTP/1.0\r\nContent-Length: 0\r\n\r\n"
+    client = StringIO.new(raw)
+    _, method_name, _, _, parameters = RequestDataFiltering.parse_request_data(client, ['get.test_parameters'])
+    assert_equal 'get.test_parameters', method_name
+    assert_equal 'hello world', parameters['param1']
+  end
+
+  def test_body_size_limit_raises_payload_too_large
+    assert_raises(PayloadTooLargeError) do
+      RequestDataFiltering.extract_body(StringIO.new, '', 2_000_000, 1_048_576)
+    end
   end
 end

@@ -9,17 +9,22 @@ class DummyBase
 
   def initialize
     @call_count = 0
+    @nil_response_mode = false
   end
 
   def call_endpoint(*args, **kwargs)
     @call_count += 1
     @last_args = args
     @last_kwargs = kwargs
-    @response || ['base_result', 200]
+    @nil_response_mode ? nil : (@response || ['base_result', 200])
   end
 
   def define_response(response)
     @response = response
+  end
+
+  def define_nil_response
+    @nil_response_mode = true
   end
 end
 
@@ -164,5 +169,17 @@ class CacheAspectTest < Minitest::Test
     expected_key = [filtered].to_s.to_sym
     refute cache[:cache].cache.key?(expected_key)
     assert_equal ['non_cache_result', 500], result
+  end
+
+  def test_nil_response_does_not_crash
+    cache = @cache_obj.dup
+    @dummy.define_nil_response
+    result = @dummy.call_endpoint(cache, 'endpoint1', @client_data)
+    assert_nil result
+    assert_equal 1, @dummy.call_count
+    # Nothing should have been cached
+    filtered = { params: { allowed_param: 'param1' }, headers: { allowed_header: 'value1' } }
+    expected_key = [filtered].to_s.to_sym
+    refute cache[:cache].cache.key?(expected_key)
   end
 end
