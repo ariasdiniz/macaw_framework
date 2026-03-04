@@ -16,7 +16,7 @@ module RequestDataFiltering
     first_line = client.gets
     raise EOFError if first_line.nil?
 
-    path, parameters = extract_url_parameters(first_line.gsub(/\s*HTTP\/\d+(?:\.\d+)?\s*$/i, ''))
+    path, parameters = extract_url_parameters(first_line.gsub(%r{\s*HTTP/\d+(?:\.\d+)?\s*$}i, ''))
     parameters = {} if parameters.nil?
 
     method_name = sanitize_method_name(path)
