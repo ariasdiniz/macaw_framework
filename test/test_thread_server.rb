@@ -266,8 +266,8 @@ class ServerTest < Minitest::Test
     @macaw.config = {
       'macaw' => {
         'ssl' => {
-          'min' => 'SSL3',
-          'max' => 'TLS1.1',
+          'min' => 'TLS1.2',
+          'max' => 'TLS1.3',
           'cert_file_name' => './test/data/test_cert.pem',
           'key_file_name' => './test/data/test_key.pem'
         }
@@ -275,8 +275,8 @@ class ServerTest < Minitest::Test
     }
 
     context_mock = Minitest::Mock.new
-    context_mock.expect(:min_version=, nil, [OpenSSL::SSL::SSL3_VERSION])
-    context_mock.expect(:max_version=, nil, [OpenSSL::SSL::TLS1_1_VERSION])
+    context_mock.expect(:min_version=, nil, [OpenSSL::SSL::TLS1_2_VERSION])
+    context_mock.expect(:max_version=, nil, [OpenSSL::SSL::TLS1_3_VERSION])
     context_mock.expect(:cert=, nil, [Object])
     context_mock.expect(:key=, nil, [Object])
 

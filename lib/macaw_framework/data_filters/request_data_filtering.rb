@@ -74,8 +74,8 @@ module RequestDataFiltering
   def self.extract_headers(client)
     header = client.gets&.delete("\n")&.delete("\r")
     headers = {}
-    while header&.match(%r{[a-zA-Z0-9\-/*]*: [a-zA-Z0-9\-/*]})
-      split_header = header.split(':')
+    while header&.match(/\A[^:]+:\s*.+/)
+      split_header = header.split(':', 2)
       headers[split_header[0].strip] = split_header[1].strip
       header = client.gets&.delete("\n")&.delete("\r")
     end
@@ -115,7 +115,6 @@ module RequestDataFiltering
   ##
   # Method responsible for sanitizing the parameter value
   def self.sanitize_parameter_value(value)
-    value&.gsub(/[^\w\s]/, '')
-    value&.gsub(/\s/, '')
+    value&.gsub(/[^\w\s]/, '')&.gsub(/\s/, '')
   end
 end

@@ -67,10 +67,13 @@ module ServerBase
   end
 
   def declare_client_session(headers, secure_header_name)
-    session_id = headers[secure_header_name] || SecureRandom.uuid
-    session_id = SecureRandom.uuid if @session[session_id].nil?
-    @session[session_id] ||= [{}, Time.now]
-    session_id
+    @session_mutex ||= Mutex.new
+    @session_mutex.synchronize do
+      session_id = headers[secure_header_name] || SecureRandom.uuid
+      session_id = SecureRandom.uuid if @session[session_id].nil?
+      @session[session_id] ||= [{}, Time.now]
+      session_id
+    end
   end
 
   def set_ssl

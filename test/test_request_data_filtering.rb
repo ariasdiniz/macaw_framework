@@ -10,7 +10,7 @@ class TestRequestDataFiltering < Minitest::Test
     expected_headers = {
       'Content-Type' => 'application/json',
       'Accept' => '*/*',
-      'Host' => 'localhost',
+      'Host' => 'localhost:8080',
       'Content-Length' => '29'
     }
     expected_body = "{\n    \"testBody\": \"testing\"\n}"
@@ -36,7 +36,7 @@ class TestRequestDataFiltering < Minitest::Test
     expected_headers = {
       'Content-Type' => 'application/json',
       'Accept' => '*/*',
-      'Host' => 'localhost',
+      'Host' => 'localhost:8080',
       'Content-Length' => '29'
     }
     expected_body = "{\n    \"testBody\": \"testing\"\n}"
@@ -63,7 +63,7 @@ class TestRequestDataFiltering < Minitest::Test
     expected_headers = {
       'Content-Type' => 'application/json',
       'Accept' => '*/*',
-      'Host' => 'localhost',
+      'Host' => 'localhost:8080',
       'Content-Length' => '29'
     }
     expected_body = "{\n    \"testBody\": \"testing\"\n}"

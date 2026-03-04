@@ -163,3 +163,24 @@
 
 ## [1.4.1] - 2026-02-24
 - Removing unused Rate Limiting Middleware
+
+## [1.4.3] - 2026-03-04
+- Fix critical bug in `sanitize_parameter_value` where the first `gsub` result was discarded, leaving special characters unsanitized
+- Fix header parsing regex to correctly accept real-world headers (Authorization, Cookie, User-Agent, Host with port, etc.)
+- Fix deadlock in `maintain_worker_pool` caused by non-reentrant mutex re-acquisition when respawning dead workers
+- Add missing `require 'digest'` in `LogDataFilter`, preventing `NameError` when sensitive fields are configured
+- Fix thread-safety in `Cache#write` and `Cache#read`: both now always synchronize on the internal mutex
+- Fix thread-safety of `@session` hash: `declare_client_session` now synchronizes on a dedicated mutex
+- Fix `**kwargs` being silently dropped in `LoggingAspect` and `PrometheusAspect` when forwarding to `super`
+- Fix `CacheAspect` holding mutex during entire endpoint execution on cache miss; endpoint now runs outside the lock
+- Remove blocking `sleep(2)` from `MemoryInvalidationMiddleware` constructor; eviction thread no longer halts server startup
+- Remove `sleep(1)` per cron job from `CronRunner#start_cron_job_thread`; startup is no longer O(N) seconds
+- Remove dead code in `CronRunner`: duplicate `start_delay ||= 0` and always-true `unless start_delay.nil?` guard
+- Make `application.json` path configurable via `MACAW_CONFIG` env var; rescue `Errno::ENOENT` and `JSON::ParserError` with graceful fallback
+- Remove broken SSL2 and SSL3 from `SupportedSSLVersions` (POODLE/DROWN, unavailable on modern OpenSSL)
+- `LoggingAspect` now logs request params, body, and response status on every endpoint call
+- Use `Process.clock_gettime(Process::CLOCK_MONOTONIC)` in `PrometheusAspect` instead of `Time.now` for accurate duration measurement
+- Fix Prometheus `/metrics` endpoint `Content-Type` to `text/plain; version=0.0.4; charset=utf-8`
+- Fix RFC 7230 non-compliance: remove stray space before `\r\n` in HTTP status line
+- Add eviction thread error rescue in `MemoryInvalidationMiddleware` to prevent silent thread death
+- Set `frozen_string_literal: true` consistently across all library files

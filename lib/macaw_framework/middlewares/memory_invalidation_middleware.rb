@@ -17,8 +17,10 @@ class MemoryInvalidationMiddleware
             @cache.delete(key) if Time.now - value[1] >= inv_time_seconds
           end
         end
+      rescue StandardError => e
+        # Log and continue so the eviction thread never dies silently
+        warn "MemoryInvalidationMiddleware eviction error: #{e.message}"
       end
     end
-    sleep(2)
   end
 end

@@ -6,12 +6,12 @@ module PrometheusAspect
   def call_endpoint(prometheus_middleware, *args, **kwargs)
     return super(*args, **kwargs) if prometheus_middleware.nil?
 
-    start_time = Time.now
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
     begin
-      response = super(*args)
+      response = super(*args, **kwargs)
     ensure
-      duration = (Time.now - start_time) * 1_000
+      duration = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1_000
 
       endpoint_name = args[2].split('.').join('/')
 

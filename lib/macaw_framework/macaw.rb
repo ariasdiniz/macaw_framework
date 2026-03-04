@@ -218,10 +218,17 @@ class MacawFramework::Macaw
     @routes = []
     @cached_methods = {}
     @macaw_log ||= custom_log
-    @config = JSON.parse(File.read('application.json'))
+    config_file = ENV.fetch('MACAW_CONFIG', 'application.json')
+    @config = JSON.parse(File.read(config_file))
     @port = @config['macaw']['port'] || 8080
     @bind = @config['macaw']['bind'] || 'localhost'
     @threads = @config['macaw']['threads'] || 200
+  rescue Errno::ENOENT
+    @macaw_log&.warn("Config file '#{config_file}' not found, using default settings.")
+    @config = { 'macaw' => {} }
+  rescue JSON::ParserError => e
+    @macaw_log&.warn("Config file '#{config_file}' is not valid JSON: #{e.message}. Using default settings.")
+    @config = { 'macaw' => {} }
   end
 
   def setup_prometheus

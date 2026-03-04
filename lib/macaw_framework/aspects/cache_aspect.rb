@@ -4,17 +4,21 @@
 # Aspect that provide cache for the endpoints.
 module CacheAspect
   def call_endpoint(cache, *args, **kwargs)
-    return super(*args, **kwargs) unless !cache[:cache].nil? && cache[:endpoints_to_cache]&.include?(args[0])
+    return super(*args, **kwargs) if cache[:cache].nil? || !cache[:endpoints_to_cache]&.include?(args[0])
 
     cache_filtered_name = cache_name_filter(args[1], cache[:cached_methods][args[0]])
 
-    cache[:cache].mutex.synchronize do
-      return cache[:cache].cache[cache_filtered_name][0] unless cache[:cache].cache[cache_filtered_name].nil?
+    # Check cache first without holding the lock during endpoint execution
+    cached_response = cache[:cache].mutex.synchronize { cache[:cache].cache[cache_filtered_name]&.dig(0) }
+    return cached_response unless cached_response.nil?
 
-      response = super(*args, **kwargs)
-      cache[:cache].cache[cache_filtered_name] = [response, Time.now] if should_cache_response?(response[1])
-      response
+    response = super(*args, **kwargs)
+    if should_cache_response?(response[1])
+      cache[:cache].mutex.synchronize do
+        cache[:cache].cache[cache_filtered_name] = [response, Time.now]
+      end
     end
+    response
   end
 
   private

@@ -83,24 +83,26 @@ class ThreadServer
 
     @num_threads.times { @work_queue << :shutdown }
     @workers.each(&:join)
-    @server.close
+    @server&.close
   end
 
   private
 
   def spawn_worker
-    @workers_mutex.synchronize do
-      t = Thread.new do
-        loop do
-          client = @work_queue.pop
-          break if client == :shutdown
+    @workers_mutex.synchronize { create_worker }
+  end
 
-          handle_client(client)
-        end
+  def create_worker
+    t = Thread.new do
+      loop do
+        client = @work_queue.pop
+        break if client == :shutdown
+
+        handle_client(client)
       end
-      @workers << t
-      t
     end
+    @workers << t
+    t
   end
 
   def maintain_worker_pool
@@ -112,7 +114,7 @@ class ThreadServer
           else
             @macaw_log&.error("Worker thread #{index} died, respawning...")
             @workers.delete_at(index)
-            spawn_worker
+            create_worker
           end
         end
       end
