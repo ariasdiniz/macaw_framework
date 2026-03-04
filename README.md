@@ -169,7 +169,7 @@ end
       "endpoint": "/metrics"
     },
     "ssl": {
-      "min": "SSL3",
+      "min": "TSL1.3",
       "max": "TLS1.3",
       "key_type": "EC",
       "cert_file_name": "path/to/cert/file/file.crt",

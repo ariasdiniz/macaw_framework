@@ -8,7 +8,6 @@ module CacheAspect
 
     cache_filtered_name = cache_name_filter(args[1], cache[:cached_methods][args[0]])
 
-    # Check cache first without holding the lock during endpoint execution
     cached_response = cache[:cache].mutex.synchronize { cache[:cache].cache[cache_filtered_name]&.dig(0) }
     return cached_response unless cached_response.nil?
 
