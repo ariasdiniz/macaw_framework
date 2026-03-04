@@ -161,7 +161,7 @@
 ## [1.4.1] - 2026-02-01
 - Fixing issue when re-spawning new threads
 
-## [1.4.1] - 2026-02-24
+## [1.4.2] - 2026-02-24
 - Removing unused Rate Limiting Middleware
 
 ## [1.4.3] - 2026-03-04
@@ -184,3 +184,8 @@
 - Fix RFC 7230 non-compliance: remove stray space before `\r\n` in HTTP status line
 - Add eviction thread error rescue in `MemoryInvalidationMiddleware` to prevent silent thread death
 - Set `frozen_string_literal: true` consistently across all library files
+- Implement HTTP keep-alive: persistent TCP connections now reuse the same socket for multiple requests without a new handshake
+- Add configurable per-connection read timeout (default 30 s, configurable via `keep_alive_timeout` in `application.json`) to prevent idle or faulty clients from holding worker threads indefinitely
+- Server now responds with `Connection: keep-alive` or `Connection: close` headers according to the client's request
+- Fix request parser to properly detect client EOF and raise `EOFError` instead of propagating `nil` through the parsing pipeline
+- Use `IO#timeout=` (Ruby 3.2+) for socket timeout with `SO_RCVTIMEO` fallback for older Ruby and SSL sockets

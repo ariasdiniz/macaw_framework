@@ -23,7 +23,7 @@ module MacawFramework; end
 # Class responsible for creating endpoints and
 # starting the web server.
 class MacawFramework::Macaw
-  attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods, :secure_header, :session
+  attr_reader :routes, :macaw_log, :config, :jobs, :cached_methods, :secure_header, :session, :keep_alive_timeout
   attr_accessor :port, :bind, :threads
 
   ##
@@ -223,12 +223,15 @@ class MacawFramework::Macaw
     @port = @config['macaw']['port'] || 8080
     @bind = @config['macaw']['bind'] || 'localhost'
     @threads = @config['macaw']['threads'] || 200
+    @keep_alive_timeout = @config['macaw']['keep_alive_timeout'] || 30
   rescue Errno::ENOENT
     @macaw_log&.warn("Config file '#{config_file}' not found, using default settings.")
     @config = { 'macaw' => {} }
+    @keep_alive_timeout = 30
   rescue JSON::ParserError => e
     @macaw_log&.warn("Config file '#{config_file}' is not valid JSON: #{e.message}. Using default settings.")
     @config = { 'macaw' => {} }
+    @keep_alive_timeout = 30
   end
 
   def setup_prometheus

@@ -11,7 +11,10 @@ module RequestDataFiltering
   # Method responsible for extracting information
   # provided by the client like Headers and Body
   def self.parse_request_data(client, routes)
-    path, parameters = extract_url_parameters(client.gets&.gsub('HTTP/1.1', ''))
+    first_line = client.gets
+    raise EOFError if first_line.nil?
+
+    path, parameters = extract_url_parameters(first_line.gsub('HTTP/1.1', ''))
     parameters = {} if parameters.nil?
 
     method_name = sanitize_method_name(path)

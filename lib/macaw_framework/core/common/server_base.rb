@@ -37,33 +37,58 @@ module ServerBase
   end
 
   def handle_client(client)
-    _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
-    raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
+    apply_socket_timeout(client)
+    loop do
+      _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
+      raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
-    client_data = get_client_data(body, headers, parameters)
-    session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
-
-    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
-                                                      method_name, client_data, session_id, client.peeraddr[3])
-    response_headers ||= {}
-    response_headers[@macaw.secure_header] = session_id if @macaw.session
-    status ||= 200
-    message ||= nil
-    response_headers ||= nil
-    client.puts ResponseDataFilter.mount_response(status, response_headers, message)
-  rescue IOError, Errno::EPIPE => e
-    @macaw_log&.error("Error writing to client: #{e.message}")
-  rescue EndpointNotMappedError
-    client.print "HTTP/1.1 404 Not Found\r\n\r\n"
-  rescue StandardError => e
-    client.print "HTTP/1.1 500 Internal Server Error\r\n\r\n"
-    @macaw_log&.error(e.full_message)
+      keep_alive = keep_alive_connection?(headers)
+      client.write build_response(method_name, headers, body, parameters, keep_alive)
+      break unless keep_alive
+    rescue Errno::ECONNRESET, Errno::EPIPE, IOError
+      break
+    rescue EndpointNotMappedError
+      client.print "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n"
+      break
+    rescue StandardError => e
+      client.print "HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n"
+      @macaw_log&.error(e.full_message)
+      break
+    end
   ensure
     begin
       client.close
     rescue IOError => e
       @macaw_log&.error("Error closing client: #{e.message}")
     end
+  end
+
+  def build_response(method_name, headers, body, parameters, keep_alive)
+    client_data = get_client_data(body, headers, parameters)
+    session_id = declare_client_session(client_data[:headers], @macaw.secure_header) if @macaw.session
+
+    message, status, response_headers = call_endpoint(@prometheus_middleware, @macaw_log, @cache,
+                                                      method_name, client_data, session_id, nil)
+    response_headers ||= {}
+    response_headers[@macaw.secure_header] = session_id if @macaw.session
+    status ||= 200
+    response_headers['Connection'] = keep_alive ? 'keep-alive' : 'close'
+    ResponseDataFilter.mount_response(status, response_headers, message)
+  end
+
+  def apply_socket_timeout(client)
+    timeout = @macaw.keep_alive_timeout || 30
+    client.timeout = timeout
+  rescue NoMethodError
+    io = client.respond_to?(:to_io) ? client.to_io : client
+    timeval = [timeout, 0].pack('l_2')
+    io.setsockopt(Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, timeval)
+  rescue StandardError
+    nil
+  end
+
+  def keep_alive_connection?(headers)
+    headers['Connection']&.downcase != 'close'
   end
 
   def declare_client_session(headers, secure_header_name)

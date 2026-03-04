@@ -11,7 +11,8 @@ require_relative '../lib/macaw_framework/data_filters/request_data_filtering'
 require_relative '../lib/macaw_framework/errors/endpoint_not_mapped_error'
 
 class TestEndpoint
-  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header, :session
+  attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods, :secure_header, :session,
+              :keep_alive_timeout
   attr_accessor :config
 
   def initialize
@@ -24,6 +25,7 @@ class TestEndpoint
     @cached_methods = []
     @secure_header = 'X-Session-ID'
     @session = true
+    @keep_alive_timeout = 30
     define_singleton_method('get.hello', ->(_context) { 'Hello, World!' })
     define_singleton_method('get.ok', ->(_context) { ['Ok', 200] })
     define_singleton_method('get.ise', ->(_context) { raise StandardError, 'Internal server error' })
@@ -79,7 +81,7 @@ class ServerTest < Minitest::Test
 
     # Send a request to the server
     client = TCPSocket.new(@bind, @port)
-    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
@@ -95,7 +97,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "GET /nonexistent HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.puts "GET /nonexistent HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
@@ -111,7 +113,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "GET /ok HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.puts "GET /ok HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
@@ -127,7 +129,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "GET /ise HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.puts "GET /ise HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
@@ -146,7 +148,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "POST /hello HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    client.puts "POST /hello HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
@@ -193,7 +195,7 @@ class ServerTest < Minitest::Test
 
     # First request to set the session value
     client1 = TCPSocket.new(@bind, @port)
-    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
     response1 = client1.read
     session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
     client1.close
@@ -202,7 +204,9 @@ class ServerTest < Minitest::Test
 
     # Second request to get the session value
     client2 = TCPSocket.new(@bind, @port)
-    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\nX-Session-ID: #{session}\r\n\r\n"
+    req = "GET /get_session HTTP/1.1\r\nHost: example.com\r\n" \
+          "X-Session-ID: #{session}\r\nConnection: close\r\n\r\n"
+    client2.puts req
     response2 = client2.read
     client2.close
 
@@ -220,7 +224,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client1 = TCPSocket.new(@bind, @port)
-    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\n\r\n"
+    client1.puts "POST /set_session HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
     response1 = client1.read
     session = response1.scan(/(X-Session-ID: (?:\w+-|\w+)+)/)[0][0].split(': ')[1]
     client1.close
@@ -230,7 +234,9 @@ class ServerTest < Minitest::Test
     sleep(3.5)
 
     client2 = TCPSocket.new(@bind, @port)
-    client2.puts "GET /get_session HTTP/1.1\r\nHost: example.com\r\nX-Session-ID: #{session}\r\n\r\n"
+    req = "GET /get_session HTTP/1.1\r\nHost: example.com\r\n" \
+          "X-Session-ID: #{session}\r\nConnection: close\r\n\r\n"
+    client2.puts req
     response2 = client2.read
     client2.close
 
@@ -311,7 +317,7 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "POST /test_filter HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\nhello"
+    client.puts "POST /test_filter HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello"
     response = client.read
     client.close
 
@@ -378,7 +384,7 @@ class ServerTest < Minitest::Test
     10.times do
       threads << Thread.new do
         client = TCPSocket.new(@bind, @port)
-        client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n"
+        client.puts "GET /hello HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
         response = client.read
         client.close
         assert_match(/Hello, World!/, response)
@@ -400,11 +406,38 @@ class ServerTest < Minitest::Test
     sleep(0.1)
 
     client = TCPSocket.new(@bind, @port)
-    client.puts "GET /hello%24world HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.puts "GET /hello%24world HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
     response = client.read
     client.close
 
     assert_match(/Hello, World!/, response)
+
+    @server.shutdown
+    server_thread.join
+  end
+
+  def test_keep_alive_reuses_connection
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+
+    # First request — no Connection: close, server should keep socket open
+    request = "GET /ok HTTP/1.1\r\nHost: example.com\r\n\r\n"
+    client.write request
+    first_response = +''
+    first_response << client.readpartial(4096) until first_response.include?("\r\n\r\n")
+
+    assert_match(%r{HTTP/1.1 200 OK}, first_response)
+    assert_match(/Connection: keep-alive/, first_response)
+
+    # Second request on the same connection — now close
+    client.write "GET /hello HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"
+    second_response = client.read
+    client.close
+
+    assert_match(/Hello, World!/, second_response)
+    assert_match(/Connection: close/, second_response)
 
     @server.shutdown
     server_thread.join
