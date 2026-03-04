@@ -188,6 +188,8 @@
 - Add configurable per-connection read timeout (default 30 s, configurable via `keep_alive_timeout` in `application.json`) to prevent idle or faulty clients from holding worker threads indefinitely
 - Server now responds with `Connection: keep-alive` or `Connection: close` headers according to the client's request
 - Fix request parser to properly detect client EOF and raise `EOFError` instead of propagating `nil` through the parsing pipeline
+
+## [1.5.0] - 2026-03-04
 - Use `IO#timeout=` (Ruby 3.2+) for socket timeout with `SO_RCVTIMEO` fallback for older Ruby and SSL sockets
 - Remove Prometheus integration: `PrometheusAspect`, `PrometheusMiddleware`, and `prometheus-client` gem dependency removed
 - Remove built-in session management: `declare_client_session`, `set_session`, `@session`, and all related configuration removed
@@ -200,3 +202,9 @@
 - Add configurable request body size limit (`max_body_size` in `application.json`, default 1 MB); requests exceeding the limit are rejected with 413 Content Too Large before the body is read
 - Fix `maintain_worker_pool` iteration bug: `each_with_index` + `delete_at` skipped elements after a deletion; replaced with `reject!` + bulk respawn
 - Fix cache TTL fallback: `nil.to_i` returned 0 when `cache_invalidation` was absent, silently creating a zero-TTL cache; replaced with safe navigation `&.to_i || 3_600`
+- Fix `CacheAspect` crash when endpoint returns `nil`: guard added before `response[1]` access
+- Replace `sanitize_parameter_value` character stripping with proper CGI URL-decoding (preserves emails, UUIDs, decimal values)
+- Broaden HTTP version pattern in request parser from `HTTP/1.1` literal to regex — HTTP/1.0 requests now route correctly
+- Add `rescue StandardError` guard in `Cache#invalidation_process` to prevent silent background eviction-thread death
+- Fix `ThreadServer#shutdown` poison-pill count: uses actual `@workers.size` instead of `@num_threads`
+- Add C extension scaffold (`ext/macaw_framework_ext/`) as a foundation for future native performance-sensitive routines
