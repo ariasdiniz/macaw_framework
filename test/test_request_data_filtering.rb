@@ -144,7 +144,7 @@ class TestRequestDataFiltering < Minitest::Test
     assert_equal '3.14', filter.sanitize_parameter_value('3.14')
   end
 
-  def test_parse_request_data_with_http_10
+  def test_parse_request_data_with_legacy_http_version
     raw = "GET /test_parameters?param1=hello%20world HTTP/1.0\r\nContent-Length: 0\r\n\r\n"
     client = StringIO.new(raw)
     _, method_name, _, _, parameters = RequestDataFiltering.parse_request_data(client, ['get.test_parameters'])
