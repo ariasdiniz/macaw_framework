@@ -12,20 +12,19 @@ module ResponseDataFilter
   end
 
   def self.mount_first_response_line(status, headers)
-    separator = " \r\n\r\n"
-    separator = " \r\n" unless headers.nil?
-
-    "HTTP/1.1 #{status} #{HTTP_STATUS_CODE_MAP[status]}#{separator}"
+    reason = HTTP_STATUS_CODE_MAP[status] || 'Unknown'
+    separator = headers.nil? ? "\r\n\r\n" : "\r\n"
+    "HTTP/1.1 #{status} #{reason}#{separator}"
   end
 
   def self.mount_response_headers(headers)
     return '' if headers.nil?
 
-    response = ''
+    response = +''
     headers.each do |key, value|
-      response += "#{key}: #{value}\r\n"
+      response << "#{key}: #{value}\r\n"
     end
-    response += "\r\n"
+    response << "\r\n"
     response
   end
 end

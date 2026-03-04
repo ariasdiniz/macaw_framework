@@ -1,6 +1,7 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 require 'json'
+require 'digest'
 
 ##
 # Module responsible for sanitizing log data

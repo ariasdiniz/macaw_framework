@@ -42,7 +42,8 @@ class PrometheusMiddleware
   def prometheus_endpoint(prometheus_registry, configurations, macaw)
     endpoint = configurations['macaw']['prometheus']['endpoint'] || '/metrics'
     macaw.get(endpoint) do |_context|
-      [Prometheus::Client::Formats::Text.marshal(prometheus_registry), 200, { 'Content-Type' => 'plaintext' }]
+      [Prometheus::Client::Formats::Text.marshal(prometheus_registry), 200,
+       { 'Content-Type' => 'text/plain; version=0.0.4; charset=utf-8' }]
     end
   end
 end

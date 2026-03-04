@@ -11,7 +11,10 @@ module RequestDataFiltering
   # Method responsible for extracting information
   # provided by the client like Headers and Body
   def self.parse_request_data(client, routes)
-    path, parameters = extract_url_parameters(client.gets&.gsub('HTTP/1.1', ''))
+    first_line = client.gets
+    raise EOFError if first_line.nil?
+
+    path, parameters = extract_url_parameters(first_line.gsub('HTTP/1.1', ''))
     parameters = {} if parameters.nil?
 
     method_name = sanitize_method_name(path)
@@ -74,8 +77,8 @@ module RequestDataFiltering
   def self.extract_headers(client)
     header = client.gets&.delete("\n")&.delete("\r")
     headers = {}
-    while header&.match(%r{[a-zA-Z0-9\-/*]*: [a-zA-Z0-9\-/*]})
-      split_header = header.split(':')
+    while header&.match(/\A[^:]+:\s*.+/)
+      split_header = header.split(':', 2)
       headers[split_header[0].strip] = split_header[1].strip
       header = client.gets&.delete("\n")&.delete("\r")
     end
@@ -115,7 +118,6 @@ module RequestDataFiltering
   ##
   # Method responsible for sanitizing the parameter value
   def self.sanitize_parameter_value(value)
-    value&.gsub(/[^\w\s]/, '')
-    value&.gsub(/\s/, '')
+    value&.gsub(/[^\w\s]/, '')&.gsub(/\s/, '')
   end
 end

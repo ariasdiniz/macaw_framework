@@ -37,13 +37,8 @@ class MacawFramework::Cache
   # @example
   #   MacawFramework::Cache.write("name", "Maria", expires_in: 7200)
   def write(tag, value, expires_in: 3600)
-    if read(tag).nil?
-      @mutex.synchronize do
-        @cache.store(tag, { value: value, expires_in: Time.now + expires_in })
-      end
-    else
-      @cache[tag][:value] = value
-      @cache[tag][:expires_in] = Time.now + expires_in
+    @mutex.synchronize do
+      @cache.store(tag, { value: value, expires_in: Time.now + expires_in })
     end
   end
 
@@ -65,7 +60,9 @@ class MacawFramework::Cache
   #
   # @example
   #   MacawFramework::Cache.read("name") # Maria
-  def read(tag) = @cache.dig(tag, :value)
+  def read(tag)
+    @mutex.synchronize { @cache.dig(tag, :value) }
+  end
 
   private
 
