@@ -97,16 +97,13 @@ class ThreadServer
 
   def maintain_worker_pool
     @workers_mutex.synchronize do
-      @workers.each_with_index do |worker, index|
-        unless worker.alive?
-          if @is_shutting_down
-            @macaw_log&.info("Worker thread #{index} finished, not respawning due to server shutdown.")
-          else
-            @macaw_log&.error("Worker thread #{index} died, respawning...")
-            @workers.delete_at(index)
-            create_worker
-          end
-        end
+      return if @is_shutting_down
+
+      dead_count = @workers.count { |w| !w.alive? }
+      @workers.select!(&:alive?)
+      dead_count.times do
+        @macaw_log&.error('Worker thread died, respawning...')
+        create_worker
       end
     end
   end

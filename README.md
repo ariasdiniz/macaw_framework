@@ -124,9 +124,10 @@ Manual cache does not need any additional configuration.
 {
   "macaw": {
     "port": 8080,
-    "bind": "localhost",
+    "bind": "0.0.0.0",
     "threads": 200,
     "keep_alive_timeout": 30,
+    "max_body_size": 1048576,
     "cache": {
       "cache_invalidation": 3600
     },

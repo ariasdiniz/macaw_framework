@@ -35,7 +35,9 @@ module ServerBase
   def handle_client(client)
     apply_socket_timeout(client)
     loop do
-      _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes)
+      max_body = @macaw.max_body_size || 1_048_576
+      _path, method_name, headers, body, parameters = RequestDataFiltering.parse_request_data(client, @macaw.routes,
+                                                                                              max_body)
       raise EndpointNotMappedError unless @macaw.respond_to?(method_name)
 
       keep_alive = keep_alive_connection?(headers)
@@ -44,10 +46,13 @@ module ServerBase
     rescue Errno::ECONNRESET, Errno::EPIPE, IOError
       break
     rescue EndpointNotMappedError
-      client.print "HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n"
+      client.print "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+      break
+    rescue PayloadTooLargeError
+      client.print "HTTP/1.1 413 Content Too Large\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
       break
     rescue StandardError => e
-      client.print "HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n"
+      client.print "HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
       @macaw_log&.error(e.full_message)
       break
     end

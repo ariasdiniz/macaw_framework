@@ -138,4 +138,10 @@ class TestRequestDataFiltering < Minitest::Test
     assert_equal '123value', filter.sanitize_parameter_value('123value')
     assert_equal '123value', filter.sanitize_parameter_value("123value\n ")
   end
+
+  def test_body_size_limit_raises_payload_too_large
+    assert_raises(PayloadTooLargeError) do
+      RequestDataFiltering.extract_body(StringIO.new, '', 2_000_000, 1_048_576)
+    end
+  end
 end

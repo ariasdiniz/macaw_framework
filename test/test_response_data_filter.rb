@@ -58,4 +58,11 @@ class TestResponseDataFilter < Minitest::Test
 
     assert actual_headers == ''
   end
+
+  def test_crlf_injection_stripped_from_headers
+    headers = { 'X-Real' => "safe\r\nX-Injected: evil" }
+    response = ResponseDataFilter.mount_response(200, headers, '')
+    # CRLF stripped: the injected text must not appear as a separate HTTP header line
+    refute_match(/\r\nX-Injected: evil/, response)
+  end
 end

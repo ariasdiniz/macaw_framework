@@ -12,7 +12,7 @@ require_relative '../lib/macaw_framework/errors/endpoint_not_mapped_error'
 
 class TestEndpoint
   attr_reader :routes, :port, :bind, :threads, :macaw_log, :cached_methods,
-              :keep_alive_timeout
+              :keep_alive_timeout, :max_body_size
   attr_accessor :config
 
   def initialize
@@ -24,9 +24,12 @@ class TestEndpoint
     @config = nil
     @cached_methods = []
     @keep_alive_timeout = 30
+    @max_body_size = 1_048_576
     define_singleton_method('get.hello', ->(_context) { 'Hello, World!' })
     define_singleton_method('get.ok', ->(_context) { ['Ok', 200] })
     define_singleton_method('get.ise', ->(_context) { raise StandardError, 'Internal server error' })
+    define_singleton_method('post.upload', ->(_context) { ['Received', 200] })
+    @routes << 'post.upload'
   end
 end
 
@@ -363,6 +366,21 @@ class ServerTest < Minitest::Test
 
     assert_match(/Hello, World!/, second_response)
     assert_match(/Connection: close/, second_response)
+
+    @server.shutdown
+    server_thread.join
+  end
+
+  def test_payload_too_large
+    server_thread = Thread.new { @server.run }
+    sleep(0.1)
+
+    client = TCPSocket.new(@bind, @port)
+    client.puts "POST /upload HTTP/1.1\r\nHost: example.com\r\nContent-Length: 2000000\r\nConnection: close\r\n\r\n"
+    response = client.read
+    client.close
+
+    assert_match(%r{HTTP/1.1 413}, response)
 
     @server.shutdown
     server_thread.join
