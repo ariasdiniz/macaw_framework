@@ -13,19 +13,13 @@ class ThreadServer
 
   attr_reader :context
 
-  # rubocop:disable Metrics/ParameterLists
-
   ##
   # Create a new instance of ThreadServer.
   # @param {Macaw} macaw
-  # @param {Logger} logger
-  # @param {Integer} port
-  # @param {String} bind
-  # @param {Integer} num_threads
+  # @param {Array} endpoints_to_cache
   # @param {MemoryInvalidationMiddleware} cache
-  # @param {Prometheus::Client:Registry} prometheus
   # @return {Server}
-  def initialize(macaw, endpoints_to_cache = nil, cache = nil, prometheus = nil, prometheus_mw = nil)
+  def initialize(macaw, endpoints_to_cache = nil, cache = nil)
     @port = macaw.port
     @bind = macaw.bind
     @macaw = macaw
@@ -38,12 +32,8 @@ class ThreadServer
       endpoints_to_cache: endpoints_to_cache || [],
       cached_methods: macaw.cached_methods
     }
-    @prometheus = prometheus
-    @prometheus_middleware = prometheus_mw
     @workers = []
   end
-
-  # rubocop:enable Metrics/ParameterLists
 
   ##
   # Start running the webserver.

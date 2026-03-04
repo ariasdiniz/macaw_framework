@@ -2,8 +2,7 @@
 # MacawFramework
 
 MacawFramework is a lightweight, easy-to-use web framework for Ruby designed to simplify the development of small to 
-medium-sized web applications. Weighting less than 26Kb with support for various HTTP methods, caching, and session management,
-MacawFramework provides developers with the essential tools to quickly build and deploy their applications.
+medium-sized web applications. Weighing less than 26Kb with support for various HTTP methods and response caching,
 
 - [MacawFramework](#macawframework)
     * [Features](#features)
@@ -14,11 +13,8 @@ MacawFramework provides developers with the essential tools to quickly build and
     * [Usage](#usage)
         + [Basic routing: Define routes with support for GET, POST, PUT, PATCH, and DELETE HTTP methods](#basic-routing-define-routes-with-support-for-get-post-put-patch-and-delete-http-methods)
         + [Caching: Improve performance by caching responses and configuring cache invalidation](#caching-improve-performance-by-caching-responses-and-configuring-cache-invalidation)
-        + [Session management: Handle user sessions securely with server-side in-memory storage](#session-management-handle-user-sessions-securely-with-server-side-in-memory-storage)
-        + [Configuration: Customize various aspects of the framework through the application.json configuration file, such as SSL support and Prometheus integration](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file-such-as-ssl-support-and-prometheus-integration)
-        + [Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support](#monitoring-easily-monitor-your-application-performance-and-metrics-with-built-in-prometheus-support)
+        + [Configuration: Customize various aspects of the framework through the application.json configuration file](#configuration-customize-various-aspects-of-the-framework-through-the-applicationjson-configuration-file)
         + [Routing for "public" Folder: Serve Static Assets](#routing-for-public-folder-serve-static-assets)
-        + [Periodic Jobs](#periodic-jobs)
         + [Tips](#tips)
     * [Contributing](#contributing)
     * [License](#license)
@@ -27,10 +23,8 @@ MacawFramework provides developers with the essential tools to quickly build and
 ## Features
 
 - Simple routing with support for GET, POST, PUT, PATCH, and DELETE HTTP methods
-- Caching middleware for improved performance
-- Session management with server-side in-memory storage
+- Response caching middleware for improved performance
 - SSL support
-- Prometheus integration for monitoring and metrics
 - Less than 26Kb
 - Easy to learn
 
@@ -52,7 +46,7 @@ We evaluated MacawFramework (Version 1.2.0) to assess its ability to handle simu
 
 MacawFramework is built to be highly compatible, since it uses only native Ruby code:
 
-- **MRI**: MacawFramework is compatible with Matz's Ruby Interpreter (MRI), version 3.0.0 and onwards. If you are using this version or a more recent one, you should not encounter any compatibility issues.
+- **MRI**: MacawFramework is compatible with Matz's Ruby Interpreter (MRI), version 3.2.0 and onwards. If you are using this version or a more recent one, you should not encounter any compatibility issues.
 
 - **TruffleRuby**: TruffleRuby is another Ruby interpreter that is fully compatible with MacawFramework. This provides developers with more flexibility in their choice of Ruby interpreter.
 
@@ -93,10 +87,9 @@ end
 
 m.post('/submit_data/:path_variable') do |context|
   context[:body] # Client body data
-  context[:params] # Client params, like URL parameters or variables
+  context[:params] # Client params, like URL parameters or path variables
   context[:headers] # Client headers
   context[:params][:path_variable] # The defined path variable can be found in :params
-  context[:client] # Client session
 end
 
 m.start!
@@ -125,36 +118,7 @@ MacawFramework::Cache.read(:name) # Maria
 
 Manual cache does not need any additional configuration.
 
-### Session management: Handle user sessions with server-side in-memory storage
-
-Session will only be enabled if it's configurations exists in the `application.json` file.
-The session mechanism works by recovering the Session ID from a client sent header. The default
-header is `X-Session-ID`, but it can be changed in the `application.json` file.
-
-This header will be sent back to the user on every response if Session is enabled. Also, the
-session ID will be automatically generated and sent to a client if this client does not provide
-a session id in the HTTP request. In the case of the client sending an ID of an expired session
-the framework will return a new session with a new ID.
-
-```ruby
-m = MacawFramework::Macaw.new
-
-m.get('/login') do |context|
-  # Authenticate user
-  context[:client][:user_id] = user_id
-end
-
-m.get('/dashboard') do |context|
-  # Check if the user is logged in
-  if context[:client][:user_id]
-    # Show dashboard
-  else
-    # Redirect to login
-  end
-end
-```
-
-### Configuration: Customize various aspects of the framework through the application.json configuration file, such as SSL support and Prometheus integration
+### Configuration: Customize various aspects of the framework through the application.json configuration file
 
 ```json
 {
@@ -162,31 +126,19 @@ end
     "port": 8080,
     "bind": "localhost",
     "threads": 200,
+    "keep_alive_timeout": 30,
     "cache": {
       "cache_invalidation": 3600
     },
-    "prometheus": {
-      "endpoint": "/metrics"
-    },
     "ssl": {
-      "min": "TSL1.3",
+      "min": "TLS1.2",
       "max": "TLS1.3",
       "key_type": "EC",
       "cert_file_name": "path/to/cert/file/file.crt",
       "key_file_name": "path/to/cert/key/file.key"
-    },
-    "session": {
-      "secure_header": "X-Session-ID",
-      "invalidation_time": 3600
     }
   }
 }
-```
-
-### Monitoring: Easily monitor your application performance and metrics with built-in Prometheus support
-
-```shell
-curl http://localhost:8080/metrics
 ```
 
 ### Routing for "public" Folder: Serve Static Assets
@@ -206,29 +158,6 @@ are made. For example, if you have an image file named "logo.png" inside a "img"
 be accessible at http://yourdomain.com/img/logo.png without any additional configuration.
 
 #### Caution: This is incompatible with most non-unix systems, such as Windows. If you are using a non-unix system, you will need to manually configure the "public" folder and use dir as nil to avoid problems.
-
-### Periodic Jobs
-
-Macaw Framework supports the declaration of periodic jobs right in your application code. This feature allows developers to
-define tasks that run at set intervals, starting after an optional delay. Each job runs in a separate thread, meaning
-your periodic jobs can execute in parallel without blocking the rest of your application.
-
-Here's an example of how to declare a periodic job:
-
-```ruby
-m = MacawFramework::Macaw.new
-
-m.setup_job(interval: 5, start_delay: 5, job_name: "cron job 1") do
-  puts "i'm a periodic job that runs every 5 secs!"
-end
-```
-
-Values for interval and start_delay are in seconds.
-
-**Caution: Defining a lot of jobs with low interval can severely degrade performance.**
-
-If you want to build an application with just cron jobs, that don't need to run a web server, you can start
-MacawFramework without running a web server with the `start_without_server!` method, instead of `start!`.
 
 ### Tips
 
@@ -270,18 +199,12 @@ m.threads = 300
 - If the SSL configuration is provided in the `application.json` file with valid certificate and key files, the TCP server
   will be wrapped with HTTPS security using the provided certificate.
 
-- The supported values for `min` and `max` in the SSL configuration are: `SSL2`, `SSL3`, `TLS1.1`, `TLS1.2`, and `TLS1.3`,
+- The supported values for `min` and `max` in the SSL configuration are: `TLS1.2` and `TLS1.3`,
   and the supported values for `key_type` are `RSA` and `EC`.
-
-- If Prometheus is enabled, a GET endpoint will be defined at path `/metrics` to collect Prometheus metrics. This path
-  is configurable via the `application.json` file.
 
 - The verb methods must always return a string or nil (used as the response), a number corresponding to the HTTP status
   code to be returned to the client, and the response headers as a Hash or nil. If an endpoint doesn't return a value or
   returns nil for body, status code, and headers, a default 200 OK status will be sent as the response.
-
-- For cron jobs without a start_delay, a value of 0 will be used. For a job without a name, a unique name will be generated
-  for it.
 
 - Ensure the "public" folder is placed in the same directory as the main.rb file: The "public" folder should contain any static assets, 
   such as CSS, JavaScript, or images, that your web application requires. Placing it in the same directory as the main.rb file ensures 
