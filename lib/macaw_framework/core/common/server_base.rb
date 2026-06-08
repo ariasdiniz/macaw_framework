@@ -18,7 +18,7 @@ module ServerBase
   private
 
   def call_endpoint(name, client_data)
-    @macaw.send(
+    body, status, headers = @macaw.send(
       name.to_sym,
       {
         headers: client_data[:headers],
@@ -26,6 +26,7 @@ module ServerBase
         params: client_data[:params]
       }
     )
+    [body || '', status || 200, headers || {}]
   end
 
   def get_client_data(body, headers, parameters)
