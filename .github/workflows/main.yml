@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '4.0.1'
+          - '4.0.5'
           - '3.4.2'
 
     steps:

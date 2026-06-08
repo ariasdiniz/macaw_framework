@@ -208,3 +208,6 @@
 - Add `rescue StandardError` guard in `Cache#invalidation_process` to prevent silent background eviction-thread death
 - Fix `ThreadServer#shutdown` poison-pill count: uses actual `@workers.size` instead of `@num_threads`
 - Add C extension scaffold (`ext/macaw_framework_ext/`) as a foundation for future native performance-sensitive routines
+
+## [1.5.1]- 2026-06-07
+- Fix an error when running the server on Ruby 4.0.5 on MacOS that default values for status and headers on the response were not being set when these values are implicit on method declaration
